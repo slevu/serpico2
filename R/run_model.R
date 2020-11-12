@@ -1,0 +1,147 @@
+##---- libs ----
+library(rstan)
+library(Rcpp)
+
+##---- source ----
+source("R/functions.R")
+
+##---- external data ----
+FNREG <- "data/code_region.rds"
+FNPS <- "data/poststrat.rds"
+code_region <-  readRDS(FNREG)
+poststrat <- readRDS(FNPS)
+poststrat <- droplevels( poststrat[poststrat$code != "6", ] )
+levels(poststrat$sex) <- c("Male", "Female")
+
+##---- simulate sample ----
+d0 <- simulate_mock_data()
+
+##---- run model ----
+l_stan <- set_stan(df = d0,
+                   modelnb = 1,
+                   n_iter =  100, # increase this
+                   n_warmup = 75, # and this
+                   n_chains = 2,
+                   n_core = 2)
+NMOUT <- l_stan$nmout
+
+if ( !file.exists( NMOUT ) ){
+  model <- stan_model("R/model.stan", auto_write = TRUE)
+  system.time(
+    stanfit <- rstan::sampling(model,
+                               data = l_stan$data,
+                               iter = l_stan$parms[["n_iter"]],
+                               warmup = l_stan$parms[["n_warmup"]],
+                               chains = l_stan$parms[["n_chains"]],
+                               cores = l_stan$parms[["n_core"]],
+                               control = list(adapt_delta = 0.99))
+  )
+  dir.create("output/", showWarnings = FALSE)
+  saveRDS(stanfit, NMOUT)
+} else {
+  stanfit <- readRDS(NMOUT)
+} # 
+
+##---- plot ----
+# traceplot(stanfit, pars = "beta", inc_warmup = TRUE)
+# traceplot(stanfit, pars = "alpha_a", inc_warmup = TRUE)
+# traceplot(stanfit, pars = "alpha_r", inc_warmup = TRUE)
+# traceplot(stanfit, pars = "alpha_t", inc_warmup = TRUE)
+# traceplot(stanfit, pars = c("se"), inc_warmup = TRUE)
+# traceplot(stanfit, pars = c("sp"), inc_warmup = TRUE)
+
+##---- poststratification ----
+{
+  draws <- rstan::extract(stanfit, pars = c("beta", "alpha_a", "sigma_a",
+                                            "alpha_r", "sigma_r",
+                                            "alpha_t", "sigma_t"))
+  
+  ##- poststrat + week
+  psw <- cbind(week = as.factor(rep(1:3, each = nrow(poststrat))),
+               poststrat,
+               row.names = NULL)
+  psw2 <- data.frame(lapply(psw, as.numeric)) # matrix needed
+  # 3*2*9*17 = 918
+}
+
+
+##- fill matrices of predicted probability and
+## expected population count positive
+FNRES0 <- paste0("output/",
+                 sub("fit", "raw_res",
+                     basename(l_stan$nmout) ) )
+if ( !file.exists(FNRES0) ){
+  
+  ## likelihood
+  # x[i] * beta + sigma * eta[ll[i]]
+  
+  if (FALSE) {
+    ##- initialize matrix
+    ## with nrow cells and ncol iterations
+    probs <- matrix(-1, nrow = nrow(psw), ncol = dim(beta)[1] )
+    st <- system.time(
+      for(i in 1:nrow(psw2)){
+        for (j in 1:dim(beta)[1]){
+          u <- beta[j, 1] + 
+            beta[j, 2] * as.numeric(psw2$sex[i]) +
+            sigma_a[j] * alpha_a[j, psw2$age[i]] +
+            sigma_r[j] * alpha_r[j, psw2$code[i]] +
+            sigma_t[j] * alpha_t[j, psw2$week[i]]
+          
+          probs[i, j] <- 1/(1 + exp( - u ))
+          # pops0[i, j] <- probs[i, j] * psw$n[i]
+        }
+      }
+    )
+    print(paste("prediction loop:", st[3]))## slow: Rcpp
+  } #
+  
+  
+  Sys.unsetenv("PKG_CXXFLAGS") ## fix from https://github.com/stan-dev/rstan/issues/786
+  Rcpp::sourceCpp("src/regpred.cpp")
+  probs <- loop_C(psw = as.matrix(psw2), parms = draws)
+
+  ## pop counts
+  pops <- psw$n * probs
+  saveRDS(list(psw = psw, pops = pops), FNRES0)
+} else {
+  .raw_res <- readRDS(FNRES0)
+  psw <- .raw_res[[1]]
+  pops <- .raw_res[[2]]
+}
+
+##---- summarize ----
+{
+  ## Overall
+  .l <- lapply(unique(psw$week), function(x){
+    ntot <- sum(psw[psw$week == x, "n"])
+    # print(ntot)
+    p <- apply(pops[psw$week == x,], 2, sum)
+    # print(dim(p))
+    # print(summary(as.vector(p)))
+    mci( p / ntot * 100)
+  } )
+  .o <- do.call(c, .l)
+  
+  ## Strata
+  .s <- mci_var(v = "sex")
+  .a <- mci_var(v = "age")
+  .r <- mci_var(v = "code")
+  rownames(.r) <- code_region$abb[match(rownames(.r), code_region$REGION)]
+  
+  res <- as.data.frame(rbind("Overall" = .o, .s, .a, .r))
+  
+  ## Combined strata
+  rsa <- mci_2var("sex", "age")
+  rac <- mci_2var("age", "code")
+}
+
+##---- output ----
+FNRES <- paste0("output/",
+                sub("fit", "res",
+                    basename(NMOUT) ) )
+if ( !file.exists(FNRES) ){
+  saveRDS(list(res, rsa, rac), FNRES)
+}
+
+
