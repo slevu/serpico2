@@ -1,5 +1,6 @@
 ##---- calib_unit_test ----
 #' Results from calibration study fro one serological test
+#' @importFrom stats aggregate quantile rbinom setNames
 calib_unit_test <- function(){
   setNames(c(309, # confirmed cases
              523, # pre-pandemic
@@ -10,6 +11,12 @@ calib_unit_test <- function(){
 
 ##---- simulate_mock_data ----
 #' Simulate dataset
+#' @param vars names of covariates
+#' @param ntime,nsex,nage,nreg number of covariates categories
+#' @param prev true prevalence in reference category
+#' @param nsamplecell number of sample per poststratification * period cell
+#' @param risk_time,risk_sex,risk_age,risk_reg relative risks ({ntime,nsex,nage,nreg}_vectors)
+#' @param calib named vector of {"ncc", "npp", "TP", "TN"} counts
 simulate_mock_data <- function(
   ## sample population
   vars = c("time", "sex", "age", "reg"),
@@ -65,6 +72,10 @@ simulate_mock_data <- function(
   
 ##---- set_stan ----
 #' Set Stan inputs
+#' @param df sample data
+#' @param calib named vector of {"ncc", "npp", "TP", "TN"} counts
+#' @param modelnb for reference in ouput name
+#' @param n_iter,n_warmup,n_chains,n_core mcmc parameter 
 set_stan <- function(
   df = d0,
   calib = calib_unit_test(),
@@ -106,6 +117,8 @@ return( list(nmout = NMOUT, data = data_stan, parms = parms_stan) )
 ##---- mci ----
 #' Summarize iterations
 #' Mean and CI
+#' @param x vector
+#' @param r rounding
 mci <- function(x, r = 2){
   round(
     c(m = mean(x, na.rm = TRUE),
@@ -117,6 +130,10 @@ mci <- function(x, r = 2){
 ##---- mci_var ----
 #' Summarize iterations stratified by one categorical variable
 #' For each period
+#' @param v categorical variable
+#' @param pop population counts
+#' @param df data.frame of poststratification cells + period
+#' @param time period
 mci_var <- function(v = "age", pop = pops, df = psw, time = "week"){
   .l <- lapply(unique(df[, time]), function(w){
     sapply(setNames(levels(df[, v]), levels(df[, v])), function(x) {
@@ -132,6 +149,9 @@ mci_var <- function(v = "age", pop = pops, df = psw, time = "week"){
 ##---- mci_2var ----
 #' Summarize iterations stratified by two categorical variables
 #' For each period
+#' @param v1 categorical variable
+#' @param v2 categorical variable 2
+#' @inheritParams mci_var
 mci_2var <- function(v1, v2, pop = pops, df = psw, time = "week"){
   l <- lapply(unique(df[, time]), function(w){
     # v1 = "sex"; v2 = "age"

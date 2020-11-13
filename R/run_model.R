@@ -1,13 +1,14 @@
 ##---- libs ----
-library(rstan)
-library(Rcpp)
+require(rstan)
+require(Rcpp)
+Sys.unsetenv("PKG_CXXFLAGS") ## fix from https://github.com/stan-dev/rstan/issues/786
 
 ##---- source ----
 source("R/functions.R")
 
 ##---- external data ----
-FNREG <- "data/code_region.rds"
-FNPS <- "data/poststrat.rds"
+FNREG <- "inst/extdata/code_region.rds"
+FNPS <- "inst/extdata/poststrat.rds"
 code_region <-  readRDS(FNREG)
 poststrat <- readRDS(FNPS)
 poststrat <- droplevels( poststrat[poststrat$code != "6", ] )
@@ -19,14 +20,14 @@ d0 <- simulate_mock_data()
 ##---- run model ----
 l_stan <- set_stan(df = d0,
                    modelnb = 1,
-                   n_iter =  100, # increase this
-                   n_warmup = 75, # and this
-                   n_chains = 2,
-                   n_core = 2)
+                   n_iter =  125, # increase this
+                   n_warmup = 100, # and this
+                   n_chains = 2, # and this
+                   n_core = 2) # possibly this too
 NMOUT <- l_stan$nmout
 
 if ( !file.exists( NMOUT ) ){
-  model <- stan_model("R/model.stan", auto_write = TRUE)
+  model <- rstan::stan_model("stan/model.stan", auto_write = TRUE)
   system.time(
     stanfit <- rstan::sampling(model,
                                data = l_stan$data,
@@ -97,7 +98,7 @@ if ( !file.exists(FNRES0) ){
   } #
   
   
-  Sys.unsetenv("PKG_CXXFLAGS") ## fix from https://github.com/stan-dev/rstan/issues/786
+  
   Rcpp::sourceCpp("src/regpred.cpp")
   probs <- loop_C(psw = as.matrix(psw2), parms = draws)
 

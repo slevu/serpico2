@@ -1,0 +1,25 @@
+---
+title: "Untitled"
+author: "Stephane"
+date: "13 novembre 2020"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = FALSE, warning = FALSE, message = FALSE)
+knitr::opts_knit$set(root.dir = '../')
+options(knitr.table.format = function() {
+  if (knitr::is_latex_output()) 
+    "latex" else "pandoc"
+})
+# options(scipen=999)
+```
+
+```{r read, include = FALSE}
+knitr::read_chunk("R/run_model.R")
+```
+
+```{r libs}
+
+```
+
