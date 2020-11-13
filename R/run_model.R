@@ -1,12 +1,10 @@
 ##---- libs ----
-require(rstan)
-require(Rcpp)
-Sys.unsetenv("PKG_CXXFLAGS") ## fix from https://github.com/stan-dev/rstan/issues/786
+# Sys.unsetenv("PKG_CXXFLAGS") ## fix from https://github.com/stan-dev/rstan/issues/786
 
 ##---- source ----
-source("R/functions.R")
+# source("R/functions.R")
 
-##---- external data ----
+##---- extdata ----
 FNREG <- "inst/extdata/code_region.rds"
 FNPS <- "inst/extdata/poststrat.rds"
 code_region <-  readRDS(FNREG)
@@ -14,10 +12,10 @@ poststrat <- readRDS(FNPS)
 poststrat <- droplevels( poststrat[poststrat$code != "6", ] )
 levels(poststrat$sex) <- c("Male", "Female")
 
-##---- simulate sample ----
-d0 <- simulate_mock_data()
+##---- simsample ----
+d0 <- simulate_mock_data(obs.prev = TRUE)
 
-##---- run model ----
+##---- fit ----
 l_stan <- set_stan(df = d0,
                    modelnb = 1,
                    n_iter =  125, # increase this
@@ -27,7 +25,10 @@ l_stan <- set_stan(df = d0,
 NMOUT <- l_stan$nmout
 
 if ( !file.exists( NMOUT ) ){
-  model <- rstan::stan_model("stan/model.stan", auto_write = TRUE)
+  if (!requireNamespace("rstan", quietly = TRUE)) {
+    stop("package rstan needed")
+  }
+  model <- rstan::stan_model("inst/stan/model.stan", auto_write = TRUE)
   system.time(
     stanfit <- rstan::sampling(model,
                                data = l_stan$data,
@@ -95,9 +96,7 @@ if ( !file.exists(FNRES0) ){
       }
     )
     print(paste("prediction loop:", st[3]))## slow: Rcpp
-  } #
-  
-  
+  } # slow
   
   Rcpp::sourceCpp("src/regpred.cpp")
   probs <- loop_C(psw = as.matrix(psw2), parms = draws)

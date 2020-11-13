@@ -6,3 +6,4 @@
 R/todo.R
 R/*.rds
 output/
+inst/doc

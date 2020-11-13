@@ -16,7 +16,8 @@ simulate_mock_data(
   risk_sex = c(1, 1.2),
   risk_age = c(0.5, rep(1, nage - 1)),
   risk_reg = c(rep(1, nreg - 1), 2),
-  calib = calib_unit_test()
+  calib = calib_unit_test(),
+  obs.prev = FALSE
 )
 }
 \arguments{
@@ -31,6 +32,8 @@ simulate_mock_data(
 \item{risk_time, risk_sex, risk_age, risk_reg}{relative risks ({ntime,nsex,nage,nreg}_vectors)}
 
 \item{calib}{named vector of {"ncc", "npp", "TP", "TN"} counts}
+
+\item{obs.prev}{show observed prevalence by covariates}
 }
 \description{
 Simulate dataset

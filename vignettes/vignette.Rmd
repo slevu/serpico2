@@ -1,18 +1,25 @@
 ---
-title: "Untitled"
-author: "Stephane"
-date: "13 novembre 2020"
-output: html_document
+title: "serpico2:usage"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{serpico2:usage}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
 ---
 
 ```{r setup, include=FALSE}
-knitr::opts_chunk$set(echo = FALSE, warning = FALSE, message = FALSE)
+knitr::opts_chunk$set(echo = TRUE, warning = FALSE, message = FALSE,
+                       collapse = TRUE) #, comment = "#>")
 knitr::opts_knit$set(root.dir = '../')
 options(knitr.table.format = function() {
   if (knitr::is_latex_output()) 
     "latex" else "pandoc"
 })
 # options(scipen=999)
+```
+
+```{r pkg}
+library(serpico2)
 ```
 
 ```{r read, include = FALSE}
@@ -22,4 +29,34 @@ knitr::read_chunk("R/run_model.R")
 ```{r libs}
 
 ```
+
+Load data: poststratification population counts and region names
+```{r extdata}
+
+```
+
+Simulate sample and print observed prevalence by categories
+```{r simsample}
+
+```
+
+Fit bayesian regression
+```{r fit}
+
+```
+
+Process poststratification counts
+```{r poststratification}
+
+```
+
+Summarize over iterations
+```{r summarize}
+
+```
+
+```{r}
+res
+```
+
 

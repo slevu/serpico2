@@ -1,6 +1,7 @@
 ##---- calib_unit_test ----
 #' Results from calibration study fro one serological test
 #' @importFrom stats aggregate quantile rbinom setNames
+#' @export
 calib_unit_test <- function(){
   setNames(c(309, # confirmed cases
              523, # pre-pandemic
@@ -17,6 +18,8 @@ calib_unit_test <- function(){
 #' @param nsamplecell number of sample per poststratification * period cell
 #' @param risk_time,risk_sex,risk_age,risk_reg relative risks ({ntime,nsex,nage,nreg}_vectors)
 #' @param calib named vector of {"ncc", "npp", "TP", "TN"} counts
+#' @param obs.prev show observed prevalence by covariates
+#' @export
 simulate_mock_data <- function(
   ## sample population
   vars = c("time", "sex", "age", "reg"),
@@ -30,7 +33,8 @@ simulate_mock_data <- function(
   risk_sex = c(1, 1.2),
   risk_age = c(0.5, rep(1, nage - 1)),
   risk_reg = c(rep(1, nreg -1), 2),
-  calib = calib_unit_test()
+  calib = calib_unit_test(),
+  obs.prev = FALSE
   ){
   se <- calib["TP"] / calib["ncc"] # 0.86 # P(T+ | D+)
   sp <- calib["TN"] / calib["npp"] # 0.99 # P(T- | D-)
@@ -61,10 +65,10 @@ simulate_mock_data <- function(
   })
   
   ## obs prev
-  if (FALSE){
-    lapply(setNames(vars, vars), function(v){
+  if (obs.prev){
+    print( lapply(setNames(vars, vars), function(v){
       round( tapply(d0[,"res"], d0[,v], mean), 3)
-    })
+    }) )
   }
   
   return(d0)
@@ -76,6 +80,7 @@ simulate_mock_data <- function(
 #' @param calib named vector of {"ncc", "npp", "TP", "TN"} counts
 #' @param modelnb for reference in ouput name
 #' @param n_iter,n_warmup,n_chains,n_core mcmc parameter 
+#' @export
 set_stan <- function(
   df = d0,
   calib = calib_unit_test(),
@@ -85,7 +90,6 @@ set_stan <- function(
   n_chains = 2, # 4 #
   n_core = 2 # 2 #
 ){
-  require(rstan)
   ## name output
   iters <- (n_iter - n_warmup) * n_chains
   # dir.create("ouput/", showWarnings = FALSE)
@@ -119,6 +123,7 @@ return( list(nmout = NMOUT, data = data_stan, parms = parms_stan) )
 #' Mean and CI
 #' @param x vector
 #' @param r rounding
+#' @export
 mci <- function(x, r = 2){
   round(
     c(m = mean(x, na.rm = TRUE),
@@ -134,6 +139,7 @@ mci <- function(x, r = 2){
 #' @param pop population counts
 #' @param df data.frame of poststratification cells + period
 #' @param time period
+#' @export
 mci_var <- function(v = "age", pop = pops, df = psw, time = "week"){
   .l <- lapply(unique(df[, time]), function(w){
     sapply(setNames(levels(df[, v]), levels(df[, v])), function(x) {
@@ -152,6 +158,7 @@ mci_var <- function(v = "age", pop = pops, df = psw, time = "week"){
 #' @param v1 categorical variable
 #' @param v2 categorical variable 2
 #' @inheritParams mci_var
+#' @export
 mci_2var <- function(v1, v2, pop = pops, df = psw, time = "week"){
   l <- lapply(unique(df[, time]), function(w){
     # v1 = "sex"; v2 = "age"
