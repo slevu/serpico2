@@ -24,39 +24,56 @@ library(serpico2)
 
 ```{r read, include = FALSE}
 knitr::read_chunk("R/run_model.R")
+run <- TRUE
 ```
 
-```{r libs}
+## Simulating a sample dataset
+We start by simulating a sample dataset using function \code{simulate_mock_data}. By default it represents seroprevalence measures in distinct individuals stratified by sex, age and region, and over 3 time periods. A baseline prevalence level is set for the second period and risks of infection are varied by period and individual covariates. Test positivity is a function of sensitivity and specificity. In this simulated example and for simplicity, response rate is considered fixed for now.
 
-```
-
-Load data: poststratification population counts and region names
-```{r extdata}
-
-```
-
-Simulate sample and print observed prevalence by categories
 ```{r simsample}
 
 ```
 
-Fit bayesian regression
-```{r fit}
+Sample looks like so:
+```{r }
+rbind(head(d0), tail(d0))
+```
+
+And we can assess observed prevalence (test positivity) by categories
+
+```{r}
+vars = c("time", "sex", "age", "reg")
+print( lapply(setNames(vars, vars), function(v){
+      round( tapply(d0[,"res"], d0[,v], mean), 3)
+    }) )
+```
+
+We will also need poststratification population counts and region names (\code{poststrat} and \code{code_region} datasets). Following actual study results, we exclude one region (Mayotte).
+```{r extdata}
 
 ```
 
-Process poststratification counts
+## Estimating prevalence
+### MCMC
+Next, posteriors of regression parameters are estimated by MCMC
+```{r fit}
+
+```
+### Post-stratification
+Next, post-stratified counts of positive in the population are calculated
 ```{r poststratification}
 
 ```
 
-Summarize over iterations
+### Processing iterations
+Finally, results are summarized over iterations to estimate overall and stratified prevalence
 ```{r summarize}
 
 ```
 
+### Results
 ```{r}
-res
+knitr::kable(res)
 ```
 
 

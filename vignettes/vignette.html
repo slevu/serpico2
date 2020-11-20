@@ -96,32 +96,541 @@ code > span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Inf
 
 
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">library</span>(serpico2)</code></pre></div>
-<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="co"># Sys.unsetenv(&quot;PKG_CXXFLAGS&quot;) ## fix from https://github.com/stan-dev/rstan/issues/786</span></code></pre></div>
-<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">FNREG &lt;-<span class="st"> &quot;inst/extdata/code_region.rds&quot;</span>
-FNPS &lt;-<span class="st"> &quot;inst/extdata/poststrat.rds&quot;</span>
-code_region &lt;-<span class="st">  </span><span class="kw">readRDS</span>(FNREG)
-poststrat &lt;-<span class="st"> </span><span class="kw">readRDS</span>(FNPS)
-poststrat &lt;-<span class="st"> </span><span class="kw">droplevels</span>( poststrat[poststrat<span class="op">$</span>code <span class="op">!=</span><span class="st"> &quot;6&quot;</span>, ] )
-<span class="kw">levels</span>(poststrat<span class="op">$</span>sex) &lt;-<span class="st"> </span><span class="kw">c</span>(<span class="st">&quot;Male&quot;</span>, <span class="st">&quot;Female&quot;</span>)</code></pre></div>
-<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">d0 &lt;-<span class="st"> </span><span class="kw">simulate_mock_data</span>(<span class="dt">obs.prev =</span> <span class="ot">TRUE</span>)
-<span class="co">#&gt; $time</span>
-<span class="co">#&gt;     1     2     3 </span>
-<span class="co">#&gt; 0.006 0.076 0.094 </span>
-<span class="co">#&gt; </span>
-<span class="co">#&gt; $sex</span>
-<span class="co">#&gt;     1     2 </span>
-<span class="co">#&gt; 0.052 0.066 </span>
-<span class="co">#&gt; </span>
-<span class="co">#&gt; $age</span>
-<span class="co">#&gt;     1     2     3     4     5     6     7     8     9 </span>
-<span class="co">#&gt; 0.002 0.084 0.091 0.012 0.084 0.094 0.004 0.061 0.096 </span>
-<span class="co">#&gt; </span>
-<span class="co">#&gt; $reg</span>
-<span class="co">#&gt;     1     2     3     4     5     6     7     8     9    10    11    12    13 </span>
-<span class="co">#&gt; 0.065 0.046 0.067 0.061 0.046 0.056 0.067 0.056 0.037 0.052 0.067 0.059 0.035 </span>
-<span class="co">#&gt;    14    15    16    17 </span>
-<span class="co">#&gt; 0.050 0.054 0.057 0.124</span></code></pre></div>
-<p>Check observed prevalence</p>
+<div id="simulating-a-sample-dataset" class="section level2">
+<h2>Simulating a sample dataset</h2>
+<p>We start by simulating a sample dataset using function . By default it represents seroprevalence measures in distinct individuals stratified by sex, age and region, and over 3 time periods. A baseline prevalence level is set for the second period and risks of infection are varied by period and individual covariates. Test positivity is a function of sensitivity and specificity. In this simulated example and for simplicity, response rate is considered fixed for now.</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">  d0 &lt;-<span class="st"> </span><span class="kw">simulate_mock_data</span>()</code></pre></div>
+<p>Sample looks like so:</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">rbind</span>(<span class="kw">head</span>(d0), <span class="kw">tail</span>(d0))
+##         i time sex age reg res
+## 1       1    1   1   1   1   0
+## 2       2    1   1   1   1   0
+## 3       3    1   1   1   1   0
+## 4       4    1   1   1   1   0
+## 5       5    1   1   1   1   0
+## 6       6    1   1   1   1   0
+## 9175 9175    3   2   9  17   1
+## 9176 9176    3   2   9  17   0
+## 9177 9177    3   2   9  17   0
+## 9178 9178    3   2   9  17   0
+## 9179 9179    3   2   9  17   0
+## 9180 9180    3   2   9  17   0</code></pre></div>
+<p>And we can assess observed prevalence (test positivity) by categories</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">vars =<span class="st"> </span><span class="kw">c</span>(<span class="st">&quot;time&quot;</span>, <span class="st">&quot;sex&quot;</span>, <span class="st">&quot;age&quot;</span>, <span class="st">&quot;reg&quot;</span>)
+<span class="kw">print</span>( <span class="kw">lapply</span>(<span class="kw">setNames</span>(vars, vars), <span class="cf">function</span>(v){
+      <span class="kw">round</span>( <span class="kw">tapply</span>(d0[,<span class="st">&quot;res&quot;</span>], d0[,v], mean), <span class="dv">3</span>)
+    }) )
+## $time
+##     1     2     3 
+## 0.006 0.076 0.094 
+## 
+## $sex
+##     1     2 
+## 0.052 0.066 
+## 
+## $age
+##     1     2     3     4     5     6     7     8     9 
+## 0.002 0.084 0.091 0.012 0.084 0.094 0.004 0.061 0.096 
+## 
+## $reg
+##     1     2     3     4     5     6     7     8     9    10    11    12    13 
+## 0.065 0.046 0.067 0.061 0.046 0.056 0.067 0.056 0.037 0.052 0.067 0.059 0.035 
+##    14    15    16    17 
+## 0.050 0.054 0.057 0.124</code></pre></div>
+<p>We will also need poststratification population counts and region names ( and  datasets). Following actual study results, we exclude one region (Mayotte).</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">  poststrat &lt;-<span class="st"> </span><span class="kw">droplevels</span>( poststrat[poststrat<span class="op">$</span>code <span class="op">!=</span><span class="st"> &quot;6&quot;</span>, ] )</code></pre></div>
+</div>
+<div id="estimating-prevalence" class="section level2">
+<h2>Estimating prevalence</h2>
+<div id="mcmc" class="section level3">
+<h3>MCMC</h3>
+<p>Next, posteriors of regression parameters are estimated by MCMC</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">  l_stan &lt;-<span class="st"> </span><span class="kw">set_stan</span>(<span class="dt">df =</span> d0,
+                     <span class="dt">modelnb =</span> <span class="dv">1</span>,
+                     <span class="dt">n_iter =</span>  <span class="dv">125</span>, <span class="co"># increase this</span>
+                     <span class="dt">n_warmup =</span> <span class="dv">100</span>, <span class="co"># and this</span>
+                     <span class="dt">n_chains =</span> <span class="dv">2</span>, <span class="co"># and this</span>
+                     <span class="dt">n_core =</span> <span class="dv">2</span>) <span class="co"># possibly this too</span>
+  NMOUT &lt;-<span class="st"> </span>l_stan<span class="op">$</span>nmout
+  
+  <span class="cf">if</span> ( <span class="op">!</span><span class="kw">file.exists</span>( NMOUT ) ){
+    <span class="cf">if</span> (<span class="op">!</span><span class="kw">requireNamespace</span>(<span class="st">&quot;rstan&quot;</span>, <span class="dt">quietly =</span> <span class="ot">TRUE</span>)) {
+      <span class="kw">stop</span>(<span class="st">&quot;package rstan needed&quot;</span>)
+    }
+    model &lt;-<span class="st"> </span>rstan<span class="op">::</span><span class="kw">stan_model</span>(<span class="st">&quot;inst/stan/model.stan&quot;</span>, <span class="dt">auto_write =</span> <span class="ot">TRUE</span>)
+    <span class="kw">system.time</span>(
+      stanfit &lt;-<span class="st"> </span>rstan<span class="op">::</span><span class="kw">sampling</span>(model,
+                                 <span class="dt">data =</span> l_stan<span class="op">$</span>data,
+                                 <span class="dt">iter =</span> l_stan<span class="op">$</span>parms[[<span class="st">&quot;n_iter&quot;</span>]],
+                                 <span class="dt">warmup =</span> l_stan<span class="op">$</span>parms[[<span class="st">&quot;n_warmup&quot;</span>]],
+                                 <span class="dt">chains =</span> l_stan<span class="op">$</span>parms[[<span class="st">&quot;n_chains&quot;</span>]],
+                                 <span class="dt">cores =</span> l_stan<span class="op">$</span>parms[[<span class="st">&quot;n_core&quot;</span>]],
+                                 <span class="dt">control =</span> <span class="kw">list</span>(<span class="dt">adapt_delta =</span> <span class="fl">0.99</span>))
+    )
+    <span class="kw">dir.create</span>(<span class="st">&quot;output/&quot;</span>, <span class="dt">showWarnings =</span> <span class="ot">FALSE</span>)
+    <span class="kw">saveRDS</span>(stanfit, NMOUT)
+  } <span class="cf">else</span> {
+    stanfit &lt;-<span class="st"> </span><span class="kw">readRDS</span>(NMOUT)
+  } <span class="co"># </span></code></pre></div>
+</div>
+<div id="post-stratification" class="section level3">
+<h3>Post-stratification</h3>
+<p>Next, post-stratified counts of positive in the population are calculated</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">  {
+    draws &lt;-<span class="st"> </span>rstan<span class="op">::</span><span class="kw">extract</span>(stanfit, <span class="dt">pars =</span> <span class="kw">c</span>(<span class="st">&quot;beta&quot;</span>, <span class="st">&quot;alpha_a&quot;</span>, <span class="st">&quot;sigma_a&quot;</span>,
+                                              <span class="st">&quot;alpha_r&quot;</span>, <span class="st">&quot;sigma_r&quot;</span>,
+                                              <span class="st">&quot;alpha_t&quot;</span>, <span class="st">&quot;sigma_t&quot;</span>))
+    
+    ##- poststrat + week
+    psw &lt;-<span class="st"> </span><span class="kw">cbind</span>(<span class="dt">week =</span> <span class="kw">as.factor</span>(<span class="kw">rep</span>(<span class="dv">1</span><span class="op">:</span><span class="dv">3</span>, <span class="dt">each =</span> <span class="kw">nrow</span>(poststrat))),
+                 poststrat,
+                 <span class="dt">row.names =</span> <span class="ot">NULL</span>)
+    psw2 &lt;-<span class="st"> </span><span class="kw">data.frame</span>(<span class="kw">lapply</span>(psw, as.numeric)) <span class="co"># matrix needed</span>
+    <span class="co"># 3*2*9*17 = 918</span>
+  }
+  
+  ##- fill matrices of predicted probability and
+  ## expected population count positive
+  FNRES0 &lt;-<span class="st"> </span><span class="kw">paste0</span>(<span class="st">&quot;output/&quot;</span>,
+                   <span class="kw">sub</span>(<span class="st">&quot;fit&quot;</span>, <span class="st">&quot;raw_res&quot;</span>,
+                       <span class="kw">basename</span>(l_stan<span class="op">$</span>nmout) ) )
+  <span class="cf">if</span> ( <span class="op">!</span><span class="kw">file.exists</span>(FNRES0) ){
+    
+    ## likelihood
+    <span class="co"># x[i] * beta + sigma * eta[ll[i]]</span>
+    
+    <span class="cf">if</span> (<span class="ot">FALSE</span>) {
+      ##- initialize matrix
+      ## with nrow cells and ncol iterations
+      probs &lt;-<span class="st"> </span><span class="kw">matrix</span>(<span class="op">-</span><span class="dv">1</span>, <span class="dt">nrow =</span> <span class="kw">nrow</span>(psw), <span class="dt">ncol =</span> <span class="kw">dim</span>(beta)[<span class="dv">1</span>] )
+      st &lt;-<span class="st"> </span><span class="kw">system.time</span>(
+        <span class="cf">for</span>(i <span class="cf">in</span> <span class="dv">1</span><span class="op">:</span><span class="kw">nrow</span>(psw2)){
+          <span class="cf">for</span> (j <span class="cf">in</span> <span class="dv">1</span><span class="op">:</span><span class="kw">dim</span>(beta)[<span class="dv">1</span>]){
+            u &lt;-<span class="st"> </span>beta[j, <span class="dv">1</span>] <span class="op">+</span><span class="st"> </span>
+<span class="st">              </span>beta[j, <span class="dv">2</span>] <span class="op">*</span><span class="st"> </span><span class="kw">as.numeric</span>(psw2<span class="op">$</span>sex[i]) <span class="op">+</span>
+<span class="st">              </span>sigma_a[j] <span class="op">*</span><span class="st"> </span>alpha_a[j, psw2<span class="op">$</span>age[i]] <span class="op">+</span>
+<span class="st">              </span>sigma_r[j] <span class="op">*</span><span class="st"> </span>alpha_r[j, psw2<span class="op">$</span>code[i]] <span class="op">+</span>
+<span class="st">              </span>sigma_t[j] <span class="op">*</span><span class="st"> </span>alpha_t[j, psw2<span class="op">$</span>week[i]]
+            
+            probs[i, j] &lt;-<span class="st"> </span><span class="dv">1</span><span class="op">/</span>(<span class="dv">1</span> <span class="op">+</span><span class="st"> </span><span class="kw">exp</span>( <span class="op">-</span><span class="st"> </span>u ))
+            <span class="co"># pops0[i, j] &lt;- probs[i, j] * psw$n[i]</span>
+          }
+        }
+      )
+      <span class="kw">print</span>(<span class="kw">paste</span>(<span class="st">&quot;prediction loop:&quot;</span>, st[<span class="dv">3</span>]))## slow: Rcpp
+    } <span class="co"># slow</span>
+    
+    Rcpp<span class="op">::</span><span class="kw">sourceCpp</span>(<span class="st">&quot;src/regpred.cpp&quot;</span>)
+    probs &lt;-<span class="st"> </span><span class="kw">loop_C</span>(<span class="dt">psw =</span> <span class="kw">as.matrix</span>(psw2), <span class="dt">parms =</span> draws)
+    
+    ## pop counts
+    pops &lt;-<span class="st"> </span>psw<span class="op">$</span>n <span class="op">*</span><span class="st"> </span>probs
+    <span class="kw">saveRDS</span>(<span class="kw">list</span>(<span class="dt">psw =</span> psw, <span class="dt">pops =</span> pops), FNRES0)
+  } <span class="cf">else</span> {
+    .raw_res &lt;-<span class="st"> </span><span class="kw">readRDS</span>(FNRES0)
+    psw &lt;-<span class="st"> </span>.raw_res[[<span class="dv">1</span>]]
+    pops &lt;-<span class="st"> </span>.raw_res[[<span class="dv">2</span>]]
+  }</code></pre></div>
+</div>
+<div id="processing-iterations" class="section level3">
+<h3>Processing iterations</h3>
+<p>Finally, results are summarized over iterations to estimate overall and stratified prevalence</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">  {
+    ## Overall
+    .l &lt;-<span class="st"> </span><span class="kw">lapply</span>(<span class="kw">unique</span>(psw<span class="op">$</span>week), <span class="cf">function</span>(x){
+      ntot &lt;-<span class="st"> </span><span class="kw">sum</span>(psw[psw<span class="op">$</span>week <span class="op">==</span><span class="st"> </span>x, <span class="st">&quot;n&quot;</span>])
+      <span class="co"># print(ntot)</span>
+      p &lt;-<span class="st"> </span><span class="kw">apply</span>(pops[psw<span class="op">$</span>week <span class="op">==</span><span class="st"> </span>x,], <span class="dv">2</span>, sum)
+      <span class="co"># print(dim(p))</span>
+      <span class="co"># print(summary(as.vector(p)))</span>
+      <span class="kw">mci</span>( p <span class="op">/</span><span class="st"> </span>ntot <span class="op">*</span><span class="st"> </span><span class="dv">100</span>)
+    } )
+    .o &lt;-<span class="st"> </span><span class="kw">do.call</span>(c, .l)
+    
+    ## Strata
+    .s &lt;-<span class="st"> </span><span class="kw">mci_var</span>(<span class="dt">v =</span> <span class="st">&quot;sex&quot;</span>,  <span class="dt">pop =</span> pops, <span class="dt">df =</span> psw, <span class="dt">time =</span> <span class="st">&quot;week&quot;</span>)
+    .a &lt;-<span class="st"> </span><span class="kw">mci_var</span>(<span class="dt">v =</span> <span class="st">&quot;age&quot;</span>,  <span class="dt">pop =</span> pops, <span class="dt">df =</span> psw, <span class="dt">time =</span> <span class="st">&quot;week&quot;</span>)
+    .r &lt;-<span class="st"> </span><span class="kw">mci_var</span>(<span class="dt">v =</span> <span class="st">&quot;code&quot;</span>,  <span class="dt">pop =</span> pops, <span class="dt">df =</span> psw, <span class="dt">time =</span> <span class="st">&quot;week&quot;</span>)
+    <span class="kw">rownames</span>(.r) &lt;-<span class="st"> </span>code_region<span class="op">$</span>abb[<span class="kw">match</span>(<span class="kw">rownames</span>(.r), code_region<span class="op">$</span>REGION)]
+    
+    res &lt;-<span class="st"> </span><span class="kw">as.data.frame</span>(<span class="kw">rbind</span>(<span class="st">&quot;Overall&quot;</span> =<span class="st"> </span>.o, .s, .a, .r))
+    
+    ## Combined strata
+    rsa &lt;-<span class="st"> </span><span class="kw">mci_2var</span>(<span class="st">&quot;sex&quot;</span>, <span class="st">&quot;age&quot;</span>, <span class="dt">pop =</span> pops, <span class="dt">df =</span> psw, <span class="dt">time =</span> <span class="st">&quot;week&quot;</span>)
+    rac &lt;-<span class="st"> </span><span class="kw">mci_2var</span>(<span class="st">&quot;age&quot;</span>, <span class="st">&quot;code&quot;</span>, <span class="dt">pop =</span> pops, <span class="dt">df =</span> psw, <span class="dt">time =</span> <span class="st">&quot;week&quot;</span>)
+  }</code></pre></div>
+</div>
+<div id="results" class="section level3">
+<h3>Results</h3>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">knitr<span class="op">::</span><span class="kw">kable</span>(res)</code></pre></div>
+<table>
+<thead>
+<tr class="header">
+<th></th>
+<th align="right">m</th>
+<th align="right">2.5%</th>
+<th align="right">97.5%</th>
+<th align="right">m</th>
+<th align="right">2.5%</th>
+<th align="right">97.5%</th>
+<th align="right">m</th>
+<th align="right">2.5%</th>
+<th align="right">97.5%</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>Overall</td>
+<td align="right">0.55</td>
+<td align="right">0.25</td>
+<td align="right">0.78</td>
+<td align="right">8.36</td>
+<td align="right">6.62</td>
+<td align="right">11.86</td>
+<td align="right">9.46</td>
+<td align="right">7.29</td>
+<td align="right">11.81</td>
+</tr>
+<tr class="even">
+<td>Male</td>
+<td align="right">0.47</td>
+<td align="right">0.22</td>
+<td align="right">0.69</td>
+<td align="right">7.31</td>
+<td align="right">5.83</td>
+<td align="right">9.96</td>
+<td align="right">8.31</td>
+<td align="right">6.14</td>
+<td align="right">11.01</td>
+</tr>
+<tr class="odd">
+<td>Female</td>
+<td align="right">0.61</td>
+<td align="right">0.28</td>
+<td align="right">0.88</td>
+<td align="right">9.33</td>
+<td align="right">7.28</td>
+<td align="right">13.61</td>
+<td align="right">10.54</td>
+<td align="right">8.33</td>
+<td align="right">12.70</td>
+</tr>
+<tr class="even">
+<td>0-9</td>
+<td align="right">0.45</td>
+<td align="right">0.13</td>
+<td align="right">0.70</td>
+<td align="right">7.08</td>
+<td align="right">3.07</td>
+<td align="right">10.37</td>
+<td align="right">8.19</td>
+<td align="right">2.37</td>
+<td align="right">12.63</td>
+</tr>
+<tr class="odd">
+<td>10-19</td>
+<td align="right">0.56</td>
+<td align="right">0.26</td>
+<td align="right">0.92</td>
+<td align="right">8.52</td>
+<td align="right">6.89</td>
+<td align="right">10.30</td>
+<td align="right">9.82</td>
+<td align="right">6.01</td>
+<td align="right">14.25</td>
+</tr>
+<tr class="even">
+<td>20-29</td>
+<td align="right">0.56</td>
+<td align="right">0.21</td>
+<td align="right">0.94</td>
+<td align="right">8.63</td>
+<td align="right">5.64</td>
+<td align="right">16.73</td>
+<td align="right">9.53</td>
+<td align="right">8.15</td>
+<td align="right">11.53</td>
+</tr>
+<tr class="odd">
+<td>30-39</td>
+<td align="right">0.64</td>
+<td align="right">0.25</td>
+<td align="right">1.17</td>
+<td align="right">9.90</td>
+<td align="right">6.42</td>
+<td align="right">19.58</td>
+<td align="right">11.11</td>
+<td align="right">7.67</td>
+<td align="right">18.74</td>
+</tr>
+<tr class="even">
+<td>40-49</td>
+<td align="right">0.56</td>
+<td align="right">0.25</td>
+<td align="right">1.01</td>
+<td align="right">8.47</td>
+<td align="right">7.04</td>
+<td align="right">10.69</td>
+<td align="right">9.76</td>
+<td align="right">6.05</td>
+<td align="right">13.30</td>
+</tr>
+<tr class="odd">
+<td>50-59</td>
+<td align="right">0.58</td>
+<td align="right">0.23</td>
+<td align="right">0.95</td>
+<td align="right">8.86</td>
+<td align="right">6.31</td>
+<td align="right">16.02</td>
+<td align="right">9.80</td>
+<td align="right">8.19</td>
+<td align="right">11.60</td>
+</tr>
+<tr class="even">
+<td>60-69</td>
+<td align="right">0.48</td>
+<td align="right">0.18</td>
+<td align="right">0.75</td>
+<td align="right">7.39</td>
+<td align="right">4.30</td>
+<td align="right">10.62</td>
+<td align="right">8.44</td>
+<td align="right">4.07</td>
+<td align="right">11.08</td>
+</tr>
+<tr class="odd">
+<td>70-79</td>
+<td align="right">0.46</td>
+<td align="right">0.19</td>
+<td align="right">0.72</td>
+<td align="right">7.03</td>
+<td align="right">5.73</td>
+<td align="right">8.60</td>
+<td align="right">8.17</td>
+<td align="right">4.54</td>
+<td align="right">11.21</td>
+</tr>
+<tr class="even">
+<td>80+</td>
+<td align="right">0.60</td>
+<td align="right">0.24</td>
+<td align="right">1.13</td>
+<td align="right">9.15</td>
+<td align="right">6.35</td>
+<td align="right">15.90</td>
+<td align="right">10.14</td>
+<td align="right">8.23</td>
+<td align="right">11.95</td>
+</tr>
+<tr class="odd">
+<td>GUA</td>
+<td align="right">0.66</td>
+<td align="right">0.28</td>
+<td align="right">1.12</td>
+<td align="right">9.83</td>
+<td align="right">6.88</td>
+<td align="right">12.94</td>
+<td align="right">11.18</td>
+<td align="right">7.74</td>
+<td align="right">15.32</td>
+</tr>
+<tr class="even">
+<td>MAR</td>
+<td align="right">0.52</td>
+<td align="right">0.18</td>
+<td align="right">0.84</td>
+<td align="right">8.08</td>
+<td align="right">5.74</td>
+<td align="right">11.58</td>
+<td align="right">9.14</td>
+<td align="right">5.78</td>
+<td align="right">12.18</td>
+</tr>
+<tr class="odd">
+<td>GUY</td>
+<td align="right">0.67</td>
+<td align="right">0.26</td>
+<td align="right">1.06</td>
+<td align="right">10.14</td>
+<td align="right">6.84</td>
+<td align="right">14.10</td>
+<td align="right">11.43</td>
+<td align="right">8.31</td>
+<td align="right">15.52</td>
+</tr>
+<tr class="even">
+<td>RUN</td>
+<td align="right">0.62</td>
+<td align="right">0.26</td>
+<td align="right">1.02</td>
+<td align="right">9.39</td>
+<td align="right">5.89</td>
+<td align="right">13.78</td>
+<td align="right">10.59</td>
+<td align="right">6.75</td>
+<td align="right">15.50</td>
+</tr>
+<tr class="odd">
+<td>IDF</td>
+<td align="right">0.50</td>
+<td align="right">0.18</td>
+<td align="right">0.83</td>
+<td align="right">7.73</td>
+<td align="right">5.41</td>
+<td align="right">11.77</td>
+<td align="right">8.72</td>
+<td align="right">6.44</td>
+<td align="right">11.30</td>
+</tr>
+<tr class="even">
+<td>CVL</td>
+<td align="right">0.58</td>
+<td align="right">0.20</td>
+<td align="right">0.95</td>
+<td align="right">8.86</td>
+<td align="right">5.64</td>
+<td align="right">13.39</td>
+<td align="right">10.03</td>
+<td align="right">7.11</td>
+<td align="right">13.83</td>
+</tr>
+<tr class="odd">
+<td>BFC</td>
+<td align="right">0.67</td>
+<td align="right">0.27</td>
+<td align="right">1.10</td>
+<td align="right">10.00</td>
+<td align="right">6.74</td>
+<td align="right">13.93</td>
+<td align="right">11.29</td>
+<td align="right">7.24</td>
+<td align="right">16.77</td>
+</tr>
+<tr class="even">
+<td>NOR</td>
+<td align="right">0.60</td>
+<td align="right">0.25</td>
+<td align="right">1.01</td>
+<td align="right">9.03</td>
+<td align="right">5.81</td>
+<td align="right">12.86</td>
+<td align="right">10.30</td>
+<td align="right">6.25</td>
+<td align="right">14.29</td>
+</tr>
+<tr class="odd">
+<td>HDF</td>
+<td align="right">0.45</td>
+<td align="right">0.20</td>
+<td align="right">0.72</td>
+<td align="right">7.01</td>
+<td align="right">4.68</td>
+<td align="right">9.90</td>
+<td align="right">8.00</td>
+<td align="right">4.77</td>
+<td align="right">10.84</td>
+</tr>
+<tr class="even">
+<td>GES</td>
+<td align="right">0.54</td>
+<td align="right">0.25</td>
+<td align="right">0.85</td>
+<td align="right">8.36</td>
+<td align="right">5.86</td>
+<td align="right">13.36</td>
+<td align="right">9.44</td>
+<td align="right">7.42</td>
+<td align="right">12.07</td>
+</tr>
+<tr class="odd">
+<td>PDL</td>
+<td align="right">0.67</td>
+<td align="right">0.30</td>
+<td align="right">1.07</td>
+<td align="right">10.08</td>
+<td align="right">6.96</td>
+<td align="right">13.63</td>
+<td align="right">11.44</td>
+<td align="right">7.75</td>
+<td align="right">15.47</td>
+</tr>
+<tr class="even">
+<td>BRE</td>
+<td align="right">0.61</td>
+<td align="right">0.27</td>
+<td align="right">0.98</td>
+<td align="right">9.29</td>
+<td align="right">6.30</td>
+<td align="right">13.78</td>
+<td align="right">10.51</td>
+<td align="right">8.06</td>
+<td align="right">14.40</td>
+</tr>
+<tr class="odd">
+<td>NAQ</td>
+<td align="right">0.43</td>
+<td align="right">0.15</td>
+<td align="right">0.68</td>
+<td align="right">6.74</td>
+<td align="right">4.69</td>
+<td align="right">9.84</td>
+<td align="right">7.66</td>
+<td align="right">5.19</td>
+<td align="right">10.11</td>
+</tr>
+<tr class="even">
+<td>OCC</td>
+<td align="right">0.51</td>
+<td align="right">0.24</td>
+<td align="right">0.85</td>
+<td align="right">7.95</td>
+<td align="right">5.40</td>
+<td align="right">11.16</td>
+<td align="right">9.03</td>
+<td align="right">6.60</td>
+<td align="right">11.31</td>
+</tr>
+<tr class="odd">
+<td>ARA</td>
+<td align="right">0.56</td>
+<td align="right">0.25</td>
+<td align="right">0.91</td>
+<td align="right">8.64</td>
+<td align="right">5.11</td>
+<td align="right">14.44</td>
+<td align="right">9.78</td>
+<td align="right">6.59</td>
+<td align="right">14.50</td>
+</tr>
+<tr class="even">
+<td>PAC</td>
+<td align="right">0.58</td>
+<td align="right">0.22</td>
+<td align="right">0.98</td>
+<td align="right">8.93</td>
+<td align="right">5.78</td>
+<td align="right">13.72</td>
+<td align="right">10.10</td>
+<td align="right">6.48</td>
+<td align="right">14.33</td>
+</tr>
+<tr class="odd">
+<td>COR</td>
+<td align="right">1.22</td>
+<td align="right">0.49</td>
+<td align="right">2.34</td>
+<td align="right">16.85</td>
+<td align="right">11.63</td>
+<td align="right">22.57</td>
+<td align="right">18.83</td>
+<td align="right">13.79</td>
+<td align="right">25.11</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
 
 
 

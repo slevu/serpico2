@@ -1,3 +1,5 @@
+d0 <- pops <-  psw <- NULL
+
 ##---- calib_unit_test ----
 #' Results from calibration study fro one serological test
 #' @importFrom stats aggregate quantile rbinom setNames
