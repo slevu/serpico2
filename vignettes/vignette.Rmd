@@ -28,7 +28,7 @@ run <- TRUE
 ```
 
 ## Simulating a sample dataset
-We start by simulating a sample dataset using function \code{simulate_mock_data}. By default it represents seroprevalence measures in distinct individuals stratified by sex, age and region, and over 3 time periods. A baseline prevalence level is set for the second period and risks of infection are varied by period and individual covariates. Test positivity is a function of sensitivity and specificity. In this simulated example and for simplicity, response rate is considered fixed for now.
+We start by simulating a sample dataset using function `simulate_mock_data`. By default it represents seroprevalence measures in distinct individuals stratified by sex, age and region, and over 3 time periods. A baseline prevalence level is set for the second period and risks of infection are varied by period and individual covariates. Test positivity is a function of sensitivity and specificity. In this simulated example and for simplicity, response rate is considered fixed for now.
 
 ```{r simsample}
 
@@ -48,7 +48,7 @@ print( lapply(setNames(vars, vars), function(v){
     }) )
 ```
 
-We will also need poststratification population counts and region names (\code{poststrat} and \code{code_region} datasets). Following actual study results, we exclude one region (Mayotte).
+We will also need poststratification population counts and region names (`poststrat` and `code_region` datasets). Following actual study input and results, we exclude one region (Mayotte).
 ```{r extdata}
 
 ```
@@ -71,7 +71,7 @@ Finally, results are summarized over iterations to estimate overall and stratifi
 
 ```
 
-### Results
+### Results by period
 ```{r}
 knitr::kable(res)
 ```

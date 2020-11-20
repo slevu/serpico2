@@ -8,7 +8,6 @@ if ( exists("run", globalenv()) ){
 ##---- extdata ----
   poststrat <- droplevels( poststrat[poststrat$code != "6", ] )
 
-
 ##---- simsample ----
   d0 <- simulate_mock_data()
 
@@ -22,9 +21,6 @@ if ( exists("run", globalenv()) ){
   NMOUT <- l_stan$nmout
   
   if ( !file.exists( NMOUT ) ){
-    if (!requireNamespace("rstan", quietly = TRUE)) {
-      stop("package rstan needed")
-    }
     model <- rstan::stan_model("inst/stan/model.stan", auto_write = TRUE)
     system.time(
       stanfit <- rstan::sampling(model,
@@ -65,38 +61,10 @@ if ( exists("run", globalenv()) ){
   
   ##- fill matrices of predicted probability and
   ## expected population count positive
-  FNRES0 <- paste0("output/",
-                   sub("fit", "raw_res",
-                       basename(l_stan$nmout) ) )
+  FNRES0 <- paste0("output/", sub("fit", "raw_res", basename(l_stan$nmout) ) )
   if ( !file.exists(FNRES0) ){
-    
-    ## likelihood
-    # x[i] * beta + sigma * eta[ll[i]]
-    
-    if (FALSE) {
-      ##- initialize matrix
-      ## with nrow cells and ncol iterations
-      probs <- matrix(-1, nrow = nrow(psw), ncol = dim(beta)[1] )
-      st <- system.time(
-        for(i in 1:nrow(psw2)){
-          for (j in 1:dim(beta)[1]){
-            u <- beta[j, 1] + 
-              beta[j, 2] * as.numeric(psw2$sex[i]) +
-              sigma_a[j] * alpha_a[j, psw2$age[i]] +
-              sigma_r[j] * alpha_r[j, psw2$code[i]] +
-              sigma_t[j] * alpha_t[j, psw2$week[i]]
-            
-            probs[i, j] <- 1/(1 + exp( - u ))
-            # pops0[i, j] <- probs[i, j] * psw$n[i]
-          }
-        }
-      )
-      print(paste("prediction loop:", st[3]))## slow: Rcpp
-    } # slow
-    
     Rcpp::sourceCpp("src/regpred.cpp")
     probs <- loop_C(psw = as.matrix(psw2), parms = draws)
-    
     ## pop counts
     pops <- psw$n * probs
     saveRDS(list(psw = psw, pops = pops), FNRES0)
@@ -111,31 +79,23 @@ if ( exists("run", globalenv()) ){
     ## Overall
     .l <- lapply(unique(psw$week), function(x){
       ntot <- sum(psw[psw$week == x, "n"])
-      # print(ntot)
       p <- apply(pops[psw$week == x,], 2, sum)
-      # print(dim(p))
-      # print(summary(as.vector(p)))
       mci( p / ntot * 100)
     } )
     .o <- do.call(c, .l)
-    
     ## Strata
     .s <- mci_var(v = "sex",  pop = pops, df = psw, time = "week")
     .a <- mci_var(v = "age",  pop = pops, df = psw, time = "week")
     .r <- mci_var(v = "code",  pop = pops, df = psw, time = "week")
     rownames(.r) <- code_region$abb[match(rownames(.r), code_region$REGION)]
-    
     res <- as.data.frame(rbind("Overall" = .o, .s, .a, .r))
-    
     ## Combined strata
     rsa <- mci_2var("sex", "age", pop = pops, df = psw, time = "week")
     rac <- mci_2var("age", "code", pop = pops, df = psw, time = "week")
   }
   
 ##---- output ----
-  FNRES <- paste0("output/",
-                  sub("fit", "res",
-                      basename(NMOUT) ) )
+  FNRES <- paste0("output/", sub("fit", "res", basename(NMOUT) ) )
   if ( !file.exists(FNRES) ){
     saveRDS(list(res, rsa, rac), FNRES)
   }

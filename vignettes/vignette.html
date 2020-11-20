@@ -98,7 +98,7 @@ code > span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Inf
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">library</span>(serpico2)</code></pre></div>
 <div id="simulating-a-sample-dataset" class="section level2">
 <h2>Simulating a sample dataset</h2>
-<p>We start by simulating a sample dataset using function . By default it represents seroprevalence measures in distinct individuals stratified by sex, age and region, and over 3 time periods. A baseline prevalence level is set for the second period and risks of infection are varied by period and individual covariates. Test positivity is a function of sensitivity and specificity. In this simulated example and for simplicity, response rate is considered fixed for now.</p>
+<p>We start by simulating a sample dataset using function <code>simulate_mock_data</code>. By default it represents seroprevalence measures in distinct individuals stratified by sex, age and region, and over 3 time periods. A baseline prevalence level is set for the second period and risks of infection are varied by period and individual covariates. Test positivity is a function of sensitivity and specificity. In this simulated example and for simplicity, response rate is considered fixed for now.</p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">  d0 &lt;-<span class="st"> </span><span class="kw">simulate_mock_data</span>()</code></pre></div>
 <p>Sample looks like so:</p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">rbind</span>(<span class="kw">head</span>(d0), <span class="kw">tail</span>(d0))
@@ -137,7 +137,7 @@ code > span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Inf
 ## 0.065 0.046 0.067 0.061 0.046 0.056 0.067 0.056 0.037 0.052 0.067 0.059 0.035 
 ##    14    15    16    17 
 ## 0.050 0.054 0.057 0.124</code></pre></div>
-<p>We will also need poststratification population counts and region names ( and  datasets). Following actual study results, we exclude one region (Mayotte).</p>
+<p>We will also need poststratification population counts and region names (<code>poststrat</code> and <code>code_region</code> datasets). Following actual study input and results, we exclude one region (Mayotte).</p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">  poststrat &lt;-<span class="st"> </span><span class="kw">droplevels</span>( poststrat[poststrat<span class="op">$</span>code <span class="op">!=</span><span class="st"> &quot;6&quot;</span>, ] )</code></pre></div>
 </div>
 <div id="estimating-prevalence" class="section level2">
@@ -154,9 +154,6 @@ code > span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Inf
   NMOUT &lt;-<span class="st"> </span>l_stan<span class="op">$</span>nmout
   
   <span class="cf">if</span> ( <span class="op">!</span><span class="kw">file.exists</span>( NMOUT ) ){
-    <span class="cf">if</span> (<span class="op">!</span><span class="kw">requireNamespace</span>(<span class="st">&quot;rstan&quot;</span>, <span class="dt">quietly =</span> <span class="ot">TRUE</span>)) {
-      <span class="kw">stop</span>(<span class="st">&quot;package rstan needed&quot;</span>)
-    }
     model &lt;-<span class="st"> </span>rstan<span class="op">::</span><span class="kw">stan_model</span>(<span class="st">&quot;inst/stan/model.stan&quot;</span>, <span class="dt">auto_write =</span> <span class="ot">TRUE</span>)
     <span class="kw">system.time</span>(
       stanfit &lt;-<span class="st"> </span>rstan<span class="op">::</span><span class="kw">sampling</span>(model,
@@ -191,38 +188,10 @@ code > span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Inf
   
   ##- fill matrices of predicted probability and
   ## expected population count positive
-  FNRES0 &lt;-<span class="st"> </span><span class="kw">paste0</span>(<span class="st">&quot;output/&quot;</span>,
-                   <span class="kw">sub</span>(<span class="st">&quot;fit&quot;</span>, <span class="st">&quot;raw_res&quot;</span>,
-                       <span class="kw">basename</span>(l_stan<span class="op">$</span>nmout) ) )
+  FNRES0 &lt;-<span class="st"> </span><span class="kw">paste0</span>(<span class="st">&quot;output/&quot;</span>, <span class="kw">sub</span>(<span class="st">&quot;fit&quot;</span>, <span class="st">&quot;raw_res&quot;</span>, <span class="kw">basename</span>(l_stan<span class="op">$</span>nmout) ) )
   <span class="cf">if</span> ( <span class="op">!</span><span class="kw">file.exists</span>(FNRES0) ){
-    
-    ## likelihood
-    <span class="co"># x[i] * beta + sigma * eta[ll[i]]</span>
-    
-    <span class="cf">if</span> (<span class="ot">FALSE</span>) {
-      ##- initialize matrix
-      ## with nrow cells and ncol iterations
-      probs &lt;-<span class="st"> </span><span class="kw">matrix</span>(<span class="op">-</span><span class="dv">1</span>, <span class="dt">nrow =</span> <span class="kw">nrow</span>(psw), <span class="dt">ncol =</span> <span class="kw">dim</span>(beta)[<span class="dv">1</span>] )
-      st &lt;-<span class="st"> </span><span class="kw">system.time</span>(
-        <span class="cf">for</span>(i <span class="cf">in</span> <span class="dv">1</span><span class="op">:</span><span class="kw">nrow</span>(psw2)){
-          <span class="cf">for</span> (j <span class="cf">in</span> <span class="dv">1</span><span class="op">:</span><span class="kw">dim</span>(beta)[<span class="dv">1</span>]){
-            u &lt;-<span class="st"> </span>beta[j, <span class="dv">1</span>] <span class="op">+</span><span class="st"> </span>
-<span class="st">              </span>beta[j, <span class="dv">2</span>] <span class="op">*</span><span class="st"> </span><span class="kw">as.numeric</span>(psw2<span class="op">$</span>sex[i]) <span class="op">+</span>
-<span class="st">              </span>sigma_a[j] <span class="op">*</span><span class="st"> </span>alpha_a[j, psw2<span class="op">$</span>age[i]] <span class="op">+</span>
-<span class="st">              </span>sigma_r[j] <span class="op">*</span><span class="st"> </span>alpha_r[j, psw2<span class="op">$</span>code[i]] <span class="op">+</span>
-<span class="st">              </span>sigma_t[j] <span class="op">*</span><span class="st"> </span>alpha_t[j, psw2<span class="op">$</span>week[i]]
-            
-            probs[i, j] &lt;-<span class="st"> </span><span class="dv">1</span><span class="op">/</span>(<span class="dv">1</span> <span class="op">+</span><span class="st"> </span><span class="kw">exp</span>( <span class="op">-</span><span class="st"> </span>u ))
-            <span class="co"># pops0[i, j] &lt;- probs[i, j] * psw$n[i]</span>
-          }
-        }
-      )
-      <span class="kw">print</span>(<span class="kw">paste</span>(<span class="st">&quot;prediction loop:&quot;</span>, st[<span class="dv">3</span>]))## slow: Rcpp
-    } <span class="co"># slow</span>
-    
     Rcpp<span class="op">::</span><span class="kw">sourceCpp</span>(<span class="st">&quot;src/regpred.cpp&quot;</span>)
     probs &lt;-<span class="st"> </span><span class="kw">loop_C</span>(<span class="dt">psw =</span> <span class="kw">as.matrix</span>(psw2), <span class="dt">parms =</span> draws)
-    
     ## pop counts
     pops &lt;-<span class="st"> </span>psw<span class="op">$</span>n <span class="op">*</span><span class="st"> </span>probs
     <span class="kw">saveRDS</span>(<span class="kw">list</span>(<span class="dt">psw =</span> psw, <span class="dt">pops =</span> pops), FNRES0)
@@ -239,29 +208,23 @@ code > span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Inf
     ## Overall
     .l &lt;-<span class="st"> </span><span class="kw">lapply</span>(<span class="kw">unique</span>(psw<span class="op">$</span>week), <span class="cf">function</span>(x){
       ntot &lt;-<span class="st"> </span><span class="kw">sum</span>(psw[psw<span class="op">$</span>week <span class="op">==</span><span class="st"> </span>x, <span class="st">&quot;n&quot;</span>])
-      <span class="co"># print(ntot)</span>
       p &lt;-<span class="st"> </span><span class="kw">apply</span>(pops[psw<span class="op">$</span>week <span class="op">==</span><span class="st"> </span>x,], <span class="dv">2</span>, sum)
-      <span class="co"># print(dim(p))</span>
-      <span class="co"># print(summary(as.vector(p)))</span>
       <span class="kw">mci</span>( p <span class="op">/</span><span class="st"> </span>ntot <span class="op">*</span><span class="st"> </span><span class="dv">100</span>)
     } )
     .o &lt;-<span class="st"> </span><span class="kw">do.call</span>(c, .l)
-    
     ## Strata
     .s &lt;-<span class="st"> </span><span class="kw">mci_var</span>(<span class="dt">v =</span> <span class="st">&quot;sex&quot;</span>,  <span class="dt">pop =</span> pops, <span class="dt">df =</span> psw, <span class="dt">time =</span> <span class="st">&quot;week&quot;</span>)
     .a &lt;-<span class="st"> </span><span class="kw">mci_var</span>(<span class="dt">v =</span> <span class="st">&quot;age&quot;</span>,  <span class="dt">pop =</span> pops, <span class="dt">df =</span> psw, <span class="dt">time =</span> <span class="st">&quot;week&quot;</span>)
     .r &lt;-<span class="st"> </span><span class="kw">mci_var</span>(<span class="dt">v =</span> <span class="st">&quot;code&quot;</span>,  <span class="dt">pop =</span> pops, <span class="dt">df =</span> psw, <span class="dt">time =</span> <span class="st">&quot;week&quot;</span>)
     <span class="kw">rownames</span>(.r) &lt;-<span class="st"> </span>code_region<span class="op">$</span>abb[<span class="kw">match</span>(<span class="kw">rownames</span>(.r), code_region<span class="op">$</span>REGION)]
-    
     res &lt;-<span class="st"> </span><span class="kw">as.data.frame</span>(<span class="kw">rbind</span>(<span class="st">&quot;Overall&quot;</span> =<span class="st"> </span>.o, .s, .a, .r))
-    
     ## Combined strata
     rsa &lt;-<span class="st"> </span><span class="kw">mci_2var</span>(<span class="st">&quot;sex&quot;</span>, <span class="st">&quot;age&quot;</span>, <span class="dt">pop =</span> pops, <span class="dt">df =</span> psw, <span class="dt">time =</span> <span class="st">&quot;week&quot;</span>)
     rac &lt;-<span class="st"> </span><span class="kw">mci_2var</span>(<span class="st">&quot;age&quot;</span>, <span class="st">&quot;code&quot;</span>, <span class="dt">pop =</span> pops, <span class="dt">df =</span> psw, <span class="dt">time =</span> <span class="st">&quot;week&quot;</span>)
   }</code></pre></div>
 </div>
-<div id="results" class="section level3">
-<h3>Results</h3>
+<div id="results-by-period" class="section level3">
+<h3>Results by period</h3>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">knitr<span class="op">::</span><span class="kw">kable</span>(res)</code></pre></div>
 <table>
 <thead>
