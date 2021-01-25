@@ -10,7 +10,7 @@ From an R session, package can be installed with:
 devtools::install_github("slevu/serpico2", build_vignettes=TRUE, force=TRUE)
 ```
 ## Requirements
-The package has been developed and tested on Windows 7 and MacOSX Version 10.13: "High Sierra" operating systems. The package should be compatible with Windows, Mac, and Linux operating systems.
+The package has been developed and tested with R version 3.6.2 on Windows 7 and MacOSX Version 10.13: "High Sierra" operating systems. The package should be compatible with Windows, Mac, and Linux operating systems.
 
 ## Package dependencies
 The following packages are needed to execute functions:
