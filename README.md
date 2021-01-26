@@ -2,7 +2,7 @@
 This repository contains R and Stan reproducible code for manuscript https://medrxiv.org/cgi/content/short/2020.10.20.20213116v1
 
 ## Usage
-A vignette built in the package demonstrates the seoprevalence estimation on a simulated dataset.
+A vignette built in the package demonstrates the functions to estimate seroprevalence from a simulated dataset. It can be seen [here](http://htmlpreview.github.io/?https://github.com/slevu/serpico2/blob/main/vignettes/vignette.html) without installing the package.
 
 ## Installation
 From an R session, package can be installed with:

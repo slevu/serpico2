@@ -8,6 +8,8 @@ R/test*
 R/*.rds
 output/
 inst/doc
+doc
+Meta
 
 # Rcpp files
 src/*.o

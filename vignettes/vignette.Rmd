@@ -28,7 +28,7 @@ run <- TRUE
 ```
 
 ## Simulating a sample dataset
-We start by simulating a sample dataset using function `simulate_mock_data`. By default it represents seroprevalence measures in distinct individuals stratified by sex, age and region, and over 3 time periods. A baseline prevalence level is set for the second period and risks of infection are varied by period and individual covariates. Test positivity is a function of sensitivity and specificity. In this simulated example and for simplicity, response rate is considered fixed for now.
+We start by simulating a sample dataset using function `simulate_mock_data`. By default it represents seropositivity measures in distinct individuals stratified by sex, age and region, and over 3 time periods. A baseline prevalence level is set for the second period and risks of infection are varied by period and individual covariates. Test positivity is a function of sensitivity and specificity. In this simulated example and for simplicity, response rate is considered fixed for now.
 
 ```{r simsample}
 
@@ -55,7 +55,7 @@ We will also need poststratification population counts and region names (`postst
 
 ## Estimating prevalence
 ### MCMC
-Next, posteriors of regression parameters are estimated by MCMC
+Then, posteriors of regression parameters aredev estimated by MCMC
 ```{r fit}
 
 ```
