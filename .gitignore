@@ -3,8 +3,8 @@
 .RData
 .Ruserdata
 
-R/todo.R
-R/test*
+#R/todo.R
+#R/test*
 R/*.rds
 output/
 inst/doc
