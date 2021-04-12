@@ -55,7 +55,7 @@ We will also need poststratification population counts and region names (`postst
 
 ## Estimating prevalence
 ### MCMC
-Then, posteriors of regression parameters aredev estimated by MCMC
+Then, posteriors of regression parameters are estimated by MCMC
 ```{r fit}
 
 ```
