@@ -1,25 +1,42 @@
-if ( exists("run", globalenv()) ){
-##---- libs ----
-  # Sys.unsetenv("PKG_CXXFLAGS") ## fix from https://github.com/stan-dev/rstan/issues/786
-  
-##---- source ----
-  # source("R/functions.R")
-  
-##---- extdata ----
-  poststrat <- droplevels( poststrat[poststrat$code != "6", ] )
+## ----setup, include=FALSE-----------------------------------------------------
+knitr::opts_chunk$set(echo = TRUE, warning = FALSE, message = FALSE,
+                       collapse = TRUE) #, comment = "#>")
+knitr::opts_knit$set(root.dir = '../')
+options(knitr.table.format = function() {
+  if (knitr::is_latex_output()) 
+    "latex" else "pandoc"
+})
+# options(scipen=999)
 
-##---- simsample ----
+## ----pkg----------------------------------------------------------------------
+library(serpico2)
+
+## ----read, include = FALSE----------------------------------------------------
+knitr::read_chunk("R/run_model.R")
+run <- TRUE
+
+## ----simsample----------------------------------------------------------------
   d0 <- simulate_mock_data()
 
-##---- fit ----
+## -----------------------------------------------------------------------------
+rbind(head(d0), tail(d0))
+
+## -----------------------------------------------------------------------------
+vars = c("time", "sex", "age", "reg")
+print( lapply(setNames(vars, vars), function(v){
+      round( tapply(d0[,"res"], d0[,v], mean), 3)
+    }) )
+
+## ----extdata------------------------------------------------------------------
+  poststrat <- droplevels( poststrat[poststrat$code != "6", ] )
+
+## ----fit----------------------------------------------------------------------
   l_stan <- set_stan(df = d0,
                      modelnb = 1,
                      n_iter =  125, # increase this
                      n_warmup = 100, # and this
-                     n_chains = 1, # and this
-                     n_core = 1, # possibly this too
-                     scale_beta_prior = 1.5,
-                     scale_sigma_prior = .5) 
+                     n_chains = 2, # and this
+                     n_core = 2) # possibly this too
   NMOUT <- l_stan$nmout
   
   if ( !file.exists( NMOUT ) ){
@@ -38,16 +55,8 @@ if ( exists("run", globalenv()) ){
   } else {
     stanfit <- readRDS(NMOUT)
   } # 
-  
-##---- plot ----
-  # rstan::traceplot(stanfit, pars = "beta", inc_warmup = TRUE)
-  # rstan::traceplot(stanfit, pars = "alpha_a", inc_warmup = TRUE)
-  # rstan::traceplot(stanfit, pars = "alpha_r", inc_warmup = TRUE)
-  # rstan::traceplot(stanfit, pars = "alpha_t", inc_warmup = TRUE)
-  # rstan::traceplot(stanfit, pars = c("se"), inc_warmup = TRUE)
-  # rstan::traceplot(stanfit, pars = c("sp"), inc_warmup = TRUE)
-  
-##---- poststratification ----
+
+## ----poststratification-------------------------------------------------------
   {
     draws <- rstan::extract(stanfit, pars = c("beta", "alpha_a", "sigma_a",
                                               "alpha_r", "sigma_r",
@@ -75,8 +84,8 @@ if ( exists("run", globalenv()) ){
     psw <- .raw_res[[1]]
     pops <- .raw_res[[2]]
   }
-  
-##---- summarize ----
+
+## ----summarize----------------------------------------------------------------
   {
     ## Overall
     .l <- lapply(unique(psw$week), function(x){
@@ -95,13 +104,7 @@ if ( exists("run", globalenv()) ){
     rsa <- mci_2var("sex", "age", pop = pops, df = psw, time = "week")
     rac <- mci_2var("age", "code", pop = pops, df = psw, time = "week")
   }
-  
-##---- output ----
-  FNRES <- paste0("output/", sub("fit", "res", basename(NMOUT) ) )
-  if ( !file.exists(FNRES) ){
-    saveRDS(list(res, rsa, rac), FNRES)
-  }
-  
-}
 
+## -----------------------------------------------------------------------------
+knitr::kable(res)
 

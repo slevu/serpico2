@@ -90,7 +90,9 @@ set_stan <- function(
   n_iter =  200, # 1500 #
   n_warmup = 150, # 250 #
   n_chains = 2, # 4 #
-  n_core = 2 # 2 #
+  n_core = 2, # 2 #
+  scale_beta_prior = 2,
+  scale_sigma_prior = 1
 ){
   ## name output
   iters <- (n_iter - n_warmup) * n_chains
@@ -112,7 +114,9 @@ set_stan <- function(
     nneg = calib["npp"],
     npos = calib["ncc"],
     TP = calib["TP"],
-    TN = calib["TN"]
+    TN = calib["TN"],
+    scale_beta_prior = scale_beta_prior,
+    scale_sigma_prior = scale_sigma_prior
   )
 parms_stan <- list(n_iter = n_iter, n_warmup = n_warmup,
                    n_chains = n_chains,

@@ -11,7 +11,9 @@ set_stan(
   n_iter = 200,
   n_warmup = 150,
   n_chains = 2,
-  n_core = 2
+  n_core = 2,
+  scale_beta_prior = 2,
+  scale_sigma_prior = 1
 )
 }
 \arguments{

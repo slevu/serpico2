@@ -1,0 +1,838 @@
+<!DOCTYPE html>
+
+<html>
+
+<head>
+
+<meta charset="utf-8" />
+<meta name="generator" content="pandoc" />
+<meta http-equiv="X-UA-Compatible" content="IE=EDGE" />
+
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+
+
+
+<title>serpico2:usage</title>
+
+<script>// Hide empty <a> tag within highlighted CodeBlock for screen reader accessibility (see https://github.com/jgm/pandoc/issues/6352#issuecomment-626106786) -->
+// v0.0.1
+// Written by JooYoung Seo (jooyoung@psu.edu) and Atsushi Yasumoto on June 1st, 2020.
+
+document.addEventListener('DOMContentLoaded', function() {
+  const codeList = document.getElementsByClassName("sourceCode");
+  for (var i = 0; i < codeList.length; i++) {
+    var linkList = codeList[i].getElementsByTagName('a');
+    for (var j = 0; j < linkList.length; j++) {
+      if (linkList[j].innerHTML === "") {
+        linkList[j].setAttribute('aria-hidden', 'true');
+      }
+    }
+  }
+});
+</script>
+
+
+<style type="text/css">code{white-space: pre;}</style>
+<style type="text/css" data-origin="pandoc">
+code.sourceCode > span { display: inline-block; line-height: 1.25; }
+code.sourceCode > span { color: inherit; text-decoration: inherit; }
+code.sourceCode > span:empty { height: 1.2em; }
+.sourceCode { overflow: visible; }
+code.sourceCode { white-space: pre; position: relative; }
+div.sourceCode { margin: 1em 0; }
+pre.sourceCode { margin: 0; }
+@media screen {
+div.sourceCode { overflow: auto; }
+}
+@media print {
+code.sourceCode { white-space: pre-wrap; }
+code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+}
+pre.numberSource code
+  { counter-reset: source-line 0; }
+pre.numberSource code > span
+  { position: relative; left: -4em; counter-increment: source-line; }
+pre.numberSource code > span > a:first-child::before
+  { content: counter(source-line);
+    position: relative; left: -1em; text-align: right; vertical-align: baseline;
+    border: none; display: inline-block;
+    -webkit-touch-callout: none; -webkit-user-select: none;
+    -khtml-user-select: none; -moz-user-select: none;
+    -ms-user-select: none; user-select: none;
+    padding: 0 4px; width: 4em;
+    color: #aaaaaa;
+  }
+pre.numberSource { margin-left: 3em; border-left: 1px solid #aaaaaa;  padding-left: 4px; }
+div.sourceCode
+  {   }
+@media screen {
+code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+}
+code span.al { color: #ff0000; font-weight: bold; } /* Alert */
+code span.an { color: #60a0b0; font-weight: bold; font-style: italic; } /* Annotation */
+code span.at { color: #7d9029; } /* Attribute */
+code span.bn { color: #40a070; } /* BaseN */
+code span.bu { } /* BuiltIn */
+code span.cf { color: #007020; font-weight: bold; } /* ControlFlow */
+code span.ch { color: #4070a0; } /* Char */
+code span.cn { color: #880000; } /* Constant */
+code span.co { color: #60a0b0; font-style: italic; } /* Comment */
+code span.cv { color: #60a0b0; font-weight: bold; font-style: italic; } /* CommentVar */
+code span.do { color: #ba2121; font-style: italic; } /* Documentation */
+code span.dt { color: #902000; } /* DataType */
+code span.dv { color: #40a070; } /* DecVal */
+code span.er { color: #ff0000; font-weight: bold; } /* Error */
+code span.ex { } /* Extension */
+code span.fl { color: #40a070; } /* Float */
+code span.fu { color: #06287e; } /* Function */
+code span.im { } /* Import */
+code span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Information */
+code span.kw { color: #007020; font-weight: bold; } /* Keyword */
+code span.op { color: #666666; } /* Operator */
+code span.ot { color: #007020; } /* Other */
+code span.pp { color: #bc7a00; } /* Preprocessor */
+code span.sc { color: #4070a0; } /* SpecialChar */
+code span.ss { color: #bb6688; } /* SpecialString */
+code span.st { color: #4070a0; } /* String */
+code span.va { color: #19177c; } /* Variable */
+code span.vs { color: #4070a0; } /* VerbatimString */
+code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warning */
+
+</style>
+<script>
+// apply pandoc div.sourceCode style to pre.sourceCode instead
+(function() {
+  var sheets = document.styleSheets;
+  for (var i = 0; i < sheets.length; i++) {
+    if (sheets[i].ownerNode.dataset["origin"] !== "pandoc") continue;
+    try { var rules = sheets[i].cssRules; } catch (e) { continue; }
+    for (var j = 0; j < rules.length; j++) {
+      var rule = rules[j];
+      // check if there is a div.sourceCode rule
+      if (rule.type !== rule.STYLE_RULE || rule.selectorText !== "div.sourceCode") continue;
+      var style = rule.style.cssText;
+      // check if color or background-color is set
+      if (rule.style.color === '' && rule.style.backgroundColor === '') continue;
+      // replace div.sourceCode by a pre.sourceCode rule
+      sheets[i].deleteRule(j);
+      sheets[i].insertRule('pre.sourceCode{' + style + '}', j);
+    }
+  }
+})();
+</script>
+
+
+
+<style type="text/css">body {
+background-color: #fff;
+margin: 1em auto;
+max-width: 700px;
+overflow: visible;
+padding-left: 2em;
+padding-right: 2em;
+font-family: "Open Sans", "Helvetica Neue", Helvetica, Arial, sans-serif;
+font-size: 14px;
+line-height: 1.35;
+}
+#TOC {
+clear: both;
+margin: 0 0 10px 10px;
+padding: 4px;
+width: 400px;
+border: 1px solid #CCCCCC;
+border-radius: 5px;
+background-color: #f6f6f6;
+font-size: 13px;
+line-height: 1.3;
+}
+#TOC .toctitle {
+font-weight: bold;
+font-size: 15px;
+margin-left: 5px;
+}
+#TOC ul {
+padding-left: 40px;
+margin-left: -1.5em;
+margin-top: 5px;
+margin-bottom: 5px;
+}
+#TOC ul ul {
+margin-left: -2em;
+}
+#TOC li {
+line-height: 16px;
+}
+table {
+margin: 1em auto;
+border-width: 1px;
+border-color: #DDDDDD;
+border-style: outset;
+border-collapse: collapse;
+}
+table th {
+border-width: 2px;
+padding: 5px;
+border-style: inset;
+}
+table td {
+border-width: 1px;
+border-style: inset;
+line-height: 18px;
+padding: 5px 5px;
+}
+table, table th, table td {
+border-left-style: none;
+border-right-style: none;
+}
+table thead, table tr.even {
+background-color: #f7f7f7;
+}
+p {
+margin: 0.5em 0;
+}
+blockquote {
+background-color: #f6f6f6;
+padding: 0.25em 0.75em;
+}
+hr {
+border-style: solid;
+border: none;
+border-top: 1px solid #777;
+margin: 28px 0;
+}
+dl {
+margin-left: 0;
+}
+dl dd {
+margin-bottom: 13px;
+margin-left: 13px;
+}
+dl dt {
+font-weight: bold;
+}
+ul {
+margin-top: 0;
+}
+ul li {
+list-style: circle outside;
+}
+ul ul {
+margin-bottom: 0;
+}
+pre, code {
+background-color: #f7f7f7;
+border-radius: 3px;
+color: #333;
+white-space: pre-wrap; 
+}
+pre {
+border-radius: 3px;
+margin: 5px 0px 10px 0px;
+padding: 10px;
+}
+pre:not([class]) {
+background-color: #f7f7f7;
+}
+code {
+font-family: Consolas, Monaco, 'Courier New', monospace;
+font-size: 85%;
+}
+p > code, li > code {
+padding: 2px 0px;
+}
+div.figure {
+text-align: center;
+}
+img {
+background-color: #FFFFFF;
+padding: 2px;
+border: 1px solid #DDDDDD;
+border-radius: 3px;
+border: 1px solid #CCCCCC;
+margin: 0 5px;
+}
+h1 {
+margin-top: 0;
+font-size: 35px;
+line-height: 40px;
+}
+h2 {
+border-bottom: 4px solid #f7f7f7;
+padding-top: 10px;
+padding-bottom: 2px;
+font-size: 145%;
+}
+h3 {
+border-bottom: 2px solid #f7f7f7;
+padding-top: 10px;
+font-size: 120%;
+}
+h4 {
+border-bottom: 1px solid #f7f7f7;
+margin-left: 8px;
+font-size: 105%;
+}
+h5, h6 {
+border-bottom: 1px solid #ccc;
+font-size: 105%;
+}
+a {
+color: #0033dd;
+text-decoration: none;
+}
+a:hover {
+color: #6666ff; }
+a:visited {
+color: #800080; }
+a:visited:hover {
+color: #BB00BB; }
+a[href^="http:"] {
+text-decoration: underline; }
+a[href^="https:"] {
+text-decoration: underline; }
+
+code > span.kw { color: #555; font-weight: bold; } 
+code > span.dt { color: #902000; } 
+code > span.dv { color: #40a070; } 
+code > span.bn { color: #d14; } 
+code > span.fl { color: #d14; } 
+code > span.ch { color: #d14; } 
+code > span.st { color: #d14; } 
+code > span.co { color: #888888; font-style: italic; } 
+code > span.ot { color: #007020; } 
+code > span.al { color: #ff0000; font-weight: bold; } 
+code > span.fu { color: #900; font-weight: bold; } 
+code > span.er { color: #a61717; background-color: #e3d2d2; } 
+</style>
+
+
+
+
+</head>
+
+<body>
+
+
+
+
+<h1 class="title toc-ignore">serpico2:usage</h1>
+
+
+
+<div class="sourceCode" id="cb1"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1"></a><span class="kw">library</span>(serpico2)</span></code></pre></div>
+<div id="simulating-a-sample-dataset" class="section level2">
+<h2>Simulating a sample dataset</h2>
+<p>We start by simulating a sample dataset using function <code>simulate_mock_data</code>. By default it represents seropositivity measures in distinct individuals stratified by sex, age and region, and over 3 time periods. A baseline prevalence level is set for the second period and risks of infection are varied by period and individual covariates. Test positivity is a function of sensitivity and specificity. In this simulated example and for simplicity, response rate is considered fixed for now.</p>
+<div class="sourceCode" id="cb2"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb2-1"><a href="#cb2-1"></a>  d0 &lt;-<span class="st"> </span><span class="kw">simulate_mock_data</span>()</span></code></pre></div>
+<p>Sample looks like so:</p>
+<div class="sourceCode" id="cb3"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb3-1"><a href="#cb3-1"></a><span class="kw">rbind</span>(<span class="kw">head</span>(d0), <span class="kw">tail</span>(d0))</span>
+<span id="cb3-2"><a href="#cb3-2"></a><span class="co">##         i time sex age reg res</span></span>
+<span id="cb3-3"><a href="#cb3-3"></a><span class="co">## 1       1    1   1   1   1   0</span></span>
+<span id="cb3-4"><a href="#cb3-4"></a><span class="co">## 2       2    1   1   1   1   0</span></span>
+<span id="cb3-5"><a href="#cb3-5"></a><span class="co">## 3       3    1   1   1   1   0</span></span>
+<span id="cb3-6"><a href="#cb3-6"></a><span class="co">## 4       4    1   1   1   1   0</span></span>
+<span id="cb3-7"><a href="#cb3-7"></a><span class="co">## 5       5    1   1   1   1   0</span></span>
+<span id="cb3-8"><a href="#cb3-8"></a><span class="co">## 6       6    1   1   1   1   0</span></span>
+<span id="cb3-9"><a href="#cb3-9"></a><span class="co">## 9175 9175    3   2   9  17   1</span></span>
+<span id="cb3-10"><a href="#cb3-10"></a><span class="co">## 9176 9176    3   2   9  17   0</span></span>
+<span id="cb3-11"><a href="#cb3-11"></a><span class="co">## 9177 9177    3   2   9  17   0</span></span>
+<span id="cb3-12"><a href="#cb3-12"></a><span class="co">## 9178 9178    3   2   9  17   0</span></span>
+<span id="cb3-13"><a href="#cb3-13"></a><span class="co">## 9179 9179    3   2   9  17   0</span></span>
+<span id="cb3-14"><a href="#cb3-14"></a><span class="co">## 9180 9180    3   2   9  17   0</span></span></code></pre></div>
+<p>And we can assess observed prevalence (test positivity) by categories</p>
+<div class="sourceCode" id="cb4"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb4-1"><a href="#cb4-1"></a>vars =<span class="st"> </span><span class="kw">c</span>(<span class="st">&quot;time&quot;</span>, <span class="st">&quot;sex&quot;</span>, <span class="st">&quot;age&quot;</span>, <span class="st">&quot;reg&quot;</span>)</span>
+<span id="cb4-2"><a href="#cb4-2"></a><span class="kw">print</span>( <span class="kw">lapply</span>(<span class="kw">setNames</span>(vars, vars), <span class="cf">function</span>(v){</span>
+<span id="cb4-3"><a href="#cb4-3"></a>      <span class="kw">round</span>( <span class="kw">tapply</span>(d0[,<span class="st">&quot;res&quot;</span>], d0[,v], mean), <span class="dv">3</span>)</span>
+<span id="cb4-4"><a href="#cb4-4"></a>    }) )</span>
+<span id="cb4-5"><a href="#cb4-5"></a><span class="co">## $time</span></span>
+<span id="cb4-6"><a href="#cb4-6"></a><span class="co">##     1     2     3 </span></span>
+<span id="cb4-7"><a href="#cb4-7"></a><span class="co">## 0.006 0.076 0.094 </span></span>
+<span id="cb4-8"><a href="#cb4-8"></a><span class="co">## </span></span>
+<span id="cb4-9"><a href="#cb4-9"></a><span class="co">## $sex</span></span>
+<span id="cb4-10"><a href="#cb4-10"></a><span class="co">##     1     2 </span></span>
+<span id="cb4-11"><a href="#cb4-11"></a><span class="co">## 0.052 0.066 </span></span>
+<span id="cb4-12"><a href="#cb4-12"></a><span class="co">## </span></span>
+<span id="cb4-13"><a href="#cb4-13"></a><span class="co">## $age</span></span>
+<span id="cb4-14"><a href="#cb4-14"></a><span class="co">##     1     2     3     4     5     6     7     8     9 </span></span>
+<span id="cb4-15"><a href="#cb4-15"></a><span class="co">## 0.002 0.084 0.091 0.012 0.084 0.094 0.004 0.061 0.096 </span></span>
+<span id="cb4-16"><a href="#cb4-16"></a><span class="co">## </span></span>
+<span id="cb4-17"><a href="#cb4-17"></a><span class="co">## $reg</span></span>
+<span id="cb4-18"><a href="#cb4-18"></a><span class="co">##     1     2     3     4     5     6     7     8     9    10    11    12    13 </span></span>
+<span id="cb4-19"><a href="#cb4-19"></a><span class="co">## 0.065 0.046 0.067 0.061 0.046 0.056 0.067 0.056 0.037 0.052 0.067 0.059 0.035 </span></span>
+<span id="cb4-20"><a href="#cb4-20"></a><span class="co">##    14    15    16    17 </span></span>
+<span id="cb4-21"><a href="#cb4-21"></a><span class="co">## 0.050 0.054 0.057 0.124</span></span></code></pre></div>
+<p>We will also need poststratification population counts and region names (<code>poststrat</code> and <code>code_region</code> datasets). Following actual study input and results, we exclude one region (Mayotte).</p>
+<div class="sourceCode" id="cb5"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb5-1"><a href="#cb5-1"></a>  poststrat &lt;-<span class="st"> </span><span class="kw">droplevels</span>( poststrat[poststrat<span class="op">$</span>code <span class="op">!=</span><span class="st"> &quot;6&quot;</span>, ] )</span></code></pre></div>
+</div>
+<div id="estimating-prevalence" class="section level2">
+<h2>Estimating prevalence</h2>
+<div id="mcmc" class="section level3">
+<h3>MCMC</h3>
+<p>Then, posteriors of regression parameters aredev estimated by MCMC</p>
+<div class="sourceCode" id="cb6"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb6-1"><a href="#cb6-1"></a>  l_stan &lt;-<span class="st"> </span><span class="kw">set_stan</span>(<span class="dt">df =</span> d0,</span>
+<span id="cb6-2"><a href="#cb6-2"></a>                     <span class="dt">modelnb =</span> <span class="dv">1</span>,</span>
+<span id="cb6-3"><a href="#cb6-3"></a>                     <span class="dt">n_iter =</span>  <span class="dv">125</span>, <span class="co"># increase this</span></span>
+<span id="cb6-4"><a href="#cb6-4"></a>                     <span class="dt">n_warmup =</span> <span class="dv">100</span>, <span class="co"># and this</span></span>
+<span id="cb6-5"><a href="#cb6-5"></a>                     <span class="dt">n_chains =</span> <span class="dv">2</span>, <span class="co"># and this</span></span>
+<span id="cb6-6"><a href="#cb6-6"></a>                     <span class="dt">n_core =</span> <span class="dv">2</span>) <span class="co"># possibly this too</span></span>
+<span id="cb6-7"><a href="#cb6-7"></a>  NMOUT &lt;-<span class="st"> </span>l_stan<span class="op">$</span>nmout</span>
+<span id="cb6-8"><a href="#cb6-8"></a>  </span>
+<span id="cb6-9"><a href="#cb6-9"></a>  <span class="cf">if</span> ( <span class="op">!</span><span class="kw">file.exists</span>( NMOUT ) ){</span>
+<span id="cb6-10"><a href="#cb6-10"></a>    model &lt;-<span class="st"> </span>rstan<span class="op">::</span><span class="kw">stan_model</span>(<span class="st">&quot;inst/stan/model.stan&quot;</span>, <span class="dt">auto_write =</span> <span class="ot">TRUE</span>)</span>
+<span id="cb6-11"><a href="#cb6-11"></a>    <span class="kw">system.time</span>(</span>
+<span id="cb6-12"><a href="#cb6-12"></a>      stanfit &lt;-<span class="st"> </span>rstan<span class="op">::</span><span class="kw">sampling</span>(model,</span>
+<span id="cb6-13"><a href="#cb6-13"></a>                                 <span class="dt">data =</span> l_stan<span class="op">$</span>data,</span>
+<span id="cb6-14"><a href="#cb6-14"></a>                                 <span class="dt">iter =</span> l_stan<span class="op">$</span>parms[[<span class="st">&quot;n_iter&quot;</span>]],</span>
+<span id="cb6-15"><a href="#cb6-15"></a>                                 <span class="dt">warmup =</span> l_stan<span class="op">$</span>parms[[<span class="st">&quot;n_warmup&quot;</span>]],</span>
+<span id="cb6-16"><a href="#cb6-16"></a>                                 <span class="dt">chains =</span> l_stan<span class="op">$</span>parms[[<span class="st">&quot;n_chains&quot;</span>]],</span>
+<span id="cb6-17"><a href="#cb6-17"></a>                                 <span class="dt">cores =</span> l_stan<span class="op">$</span>parms[[<span class="st">&quot;n_core&quot;</span>]],</span>
+<span id="cb6-18"><a href="#cb6-18"></a>                                 <span class="dt">control =</span> <span class="kw">list</span>(<span class="dt">adapt_delta =</span> <span class="fl">0.99</span>))</span>
+<span id="cb6-19"><a href="#cb6-19"></a>    )</span>
+<span id="cb6-20"><a href="#cb6-20"></a>    <span class="kw">dir.create</span>(<span class="st">&quot;output/&quot;</span>, <span class="dt">showWarnings =</span> <span class="ot">FALSE</span>)</span>
+<span id="cb6-21"><a href="#cb6-21"></a>    <span class="kw">saveRDS</span>(stanfit, NMOUT)</span>
+<span id="cb6-22"><a href="#cb6-22"></a>  } <span class="cf">else</span> {</span>
+<span id="cb6-23"><a href="#cb6-23"></a>    stanfit &lt;-<span class="st"> </span><span class="kw">readRDS</span>(NMOUT)</span>
+<span id="cb6-24"><a href="#cb6-24"></a>  } <span class="co"># </span></span></code></pre></div>
+</div>
+<div id="post-stratification" class="section level3">
+<h3>Post-stratification</h3>
+<p>Next, post-stratified counts of positive in the population are calculated</p>
+<div class="sourceCode" id="cb7"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb7-1"><a href="#cb7-1"></a>  {</span>
+<span id="cb7-2"><a href="#cb7-2"></a>    draws &lt;-<span class="st"> </span>rstan<span class="op">::</span><span class="kw">extract</span>(stanfit, <span class="dt">pars =</span> <span class="kw">c</span>(<span class="st">&quot;beta&quot;</span>, <span class="st">&quot;alpha_a&quot;</span>, <span class="st">&quot;sigma_a&quot;</span>,</span>
+<span id="cb7-3"><a href="#cb7-3"></a>                                              <span class="st">&quot;alpha_r&quot;</span>, <span class="st">&quot;sigma_r&quot;</span>,</span>
+<span id="cb7-4"><a href="#cb7-4"></a>                                              <span class="st">&quot;alpha_t&quot;</span>, <span class="st">&quot;sigma_t&quot;</span>))</span>
+<span id="cb7-5"><a href="#cb7-5"></a>    </span>
+<span id="cb7-6"><a href="#cb7-6"></a>    <span class="co">##- poststrat + week</span></span>
+<span id="cb7-7"><a href="#cb7-7"></a>    psw &lt;-<span class="st"> </span><span class="kw">cbind</span>(<span class="dt">week =</span> <span class="kw">as.factor</span>(<span class="kw">rep</span>(<span class="dv">1</span><span class="op">:</span><span class="dv">3</span>, <span class="dt">each =</span> <span class="kw">nrow</span>(poststrat))),</span>
+<span id="cb7-8"><a href="#cb7-8"></a>                 poststrat,</span>
+<span id="cb7-9"><a href="#cb7-9"></a>                 <span class="dt">row.names =</span> <span class="ot">NULL</span>)</span>
+<span id="cb7-10"><a href="#cb7-10"></a>    psw2 &lt;-<span class="st"> </span><span class="kw">data.frame</span>(<span class="kw">lapply</span>(psw, as.numeric)) <span class="co"># matrix needed</span></span>
+<span id="cb7-11"><a href="#cb7-11"></a>    <span class="co"># 3*2*9*17 = 918</span></span>
+<span id="cb7-12"><a href="#cb7-12"></a>  }</span>
+<span id="cb7-13"><a href="#cb7-13"></a>  </span>
+<span id="cb7-14"><a href="#cb7-14"></a>  <span class="co">##- fill matrices of predicted probability and</span></span>
+<span id="cb7-15"><a href="#cb7-15"></a>  <span class="co">## expected population count positive</span></span>
+<span id="cb7-16"><a href="#cb7-16"></a>  FNRES0 &lt;-<span class="st"> </span><span class="kw">paste0</span>(<span class="st">&quot;output/&quot;</span>, <span class="kw">sub</span>(<span class="st">&quot;fit&quot;</span>, <span class="st">&quot;raw_res&quot;</span>, <span class="kw">basename</span>(l_stan<span class="op">$</span>nmout) ) )</span>
+<span id="cb7-17"><a href="#cb7-17"></a>  <span class="cf">if</span> ( <span class="op">!</span><span class="kw">file.exists</span>(FNRES0) ){</span>
+<span id="cb7-18"><a href="#cb7-18"></a>    Rcpp<span class="op">::</span><span class="kw">sourceCpp</span>(<span class="st">&quot;src/regpred.cpp&quot;</span>)</span>
+<span id="cb7-19"><a href="#cb7-19"></a>    probs &lt;-<span class="st"> </span><span class="kw">loop_C</span>(<span class="dt">psw =</span> <span class="kw">as.matrix</span>(psw2), <span class="dt">parms =</span> draws)</span>
+<span id="cb7-20"><a href="#cb7-20"></a>    <span class="co">## pop counts</span></span>
+<span id="cb7-21"><a href="#cb7-21"></a>    pops &lt;-<span class="st"> </span>psw<span class="op">$</span>n <span class="op">*</span><span class="st"> </span>probs</span>
+<span id="cb7-22"><a href="#cb7-22"></a>    <span class="kw">saveRDS</span>(<span class="kw">list</span>(<span class="dt">psw =</span> psw, <span class="dt">pops =</span> pops), FNRES0)</span>
+<span id="cb7-23"><a href="#cb7-23"></a>  } <span class="cf">else</span> {</span>
+<span id="cb7-24"><a href="#cb7-24"></a>    .raw_res &lt;-<span class="st"> </span><span class="kw">readRDS</span>(FNRES0)</span>
+<span id="cb7-25"><a href="#cb7-25"></a>    psw &lt;-<span class="st"> </span>.raw_res[[<span class="dv">1</span>]]</span>
+<span id="cb7-26"><a href="#cb7-26"></a>    pops &lt;-<span class="st"> </span>.raw_res[[<span class="dv">2</span>]]</span>
+<span id="cb7-27"><a href="#cb7-27"></a>  }</span></code></pre></div>
+</div>
+<div id="processing-iterations" class="section level3">
+<h3>Processing iterations</h3>
+<p>Finally, results are summarized over iterations to estimate overall and stratified prevalence</p>
+<div class="sourceCode" id="cb8"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb8-1"><a href="#cb8-1"></a>  {</span>
+<span id="cb8-2"><a href="#cb8-2"></a>    <span class="co">## Overall</span></span>
+<span id="cb8-3"><a href="#cb8-3"></a>    .l &lt;-<span class="st"> </span><span class="kw">lapply</span>(<span class="kw">unique</span>(psw<span class="op">$</span>week), <span class="cf">function</span>(x){</span>
+<span id="cb8-4"><a href="#cb8-4"></a>      ntot &lt;-<span class="st"> </span><span class="kw">sum</span>(psw[psw<span class="op">$</span>week <span class="op">==</span><span class="st"> </span>x, <span class="st">&quot;n&quot;</span>])</span>
+<span id="cb8-5"><a href="#cb8-5"></a>      p &lt;-<span class="st"> </span><span class="kw">apply</span>(pops[psw<span class="op">$</span>week <span class="op">==</span><span class="st"> </span>x,], <span class="dv">2</span>, sum)</span>
+<span id="cb8-6"><a href="#cb8-6"></a>      <span class="kw">mci</span>( p <span class="op">/</span><span class="st"> </span>ntot <span class="op">*</span><span class="st"> </span><span class="dv">100</span>)</span>
+<span id="cb8-7"><a href="#cb8-7"></a>    } )</span>
+<span id="cb8-8"><a href="#cb8-8"></a>    .o &lt;-<span class="st"> </span><span class="kw">do.call</span>(c, .l)</span>
+<span id="cb8-9"><a href="#cb8-9"></a>    <span class="co">## Strata</span></span>
+<span id="cb8-10"><a href="#cb8-10"></a>    .s &lt;-<span class="st"> </span><span class="kw">mci_var</span>(<span class="dt">v =</span> <span class="st">&quot;sex&quot;</span>,  <span class="dt">pop =</span> pops, <span class="dt">df =</span> psw, <span class="dt">time =</span> <span class="st">&quot;week&quot;</span>)</span>
+<span id="cb8-11"><a href="#cb8-11"></a>    .a &lt;-<span class="st"> </span><span class="kw">mci_var</span>(<span class="dt">v =</span> <span class="st">&quot;age&quot;</span>,  <span class="dt">pop =</span> pops, <span class="dt">df =</span> psw, <span class="dt">time =</span> <span class="st">&quot;week&quot;</span>)</span>
+<span id="cb8-12"><a href="#cb8-12"></a>    .r &lt;-<span class="st"> </span><span class="kw">mci_var</span>(<span class="dt">v =</span> <span class="st">&quot;code&quot;</span>,  <span class="dt">pop =</span> pops, <span class="dt">df =</span> psw, <span class="dt">time =</span> <span class="st">&quot;week&quot;</span>)</span>
+<span id="cb8-13"><a href="#cb8-13"></a>    <span class="kw">rownames</span>(.r) &lt;-<span class="st"> </span>code_region<span class="op">$</span>abb[<span class="kw">match</span>(<span class="kw">rownames</span>(.r), code_region<span class="op">$</span>REGION)]</span>
+<span id="cb8-14"><a href="#cb8-14"></a>    res &lt;-<span class="st"> </span><span class="kw">as.data.frame</span>(<span class="kw">rbind</span>(<span class="st">&quot;Overall&quot;</span> =<span class="st"> </span>.o, .s, .a, .r))</span>
+<span id="cb8-15"><a href="#cb8-15"></a>    <span class="co">## Combined strata</span></span>
+<span id="cb8-16"><a href="#cb8-16"></a>    rsa &lt;-<span class="st"> </span><span class="kw">mci_2var</span>(<span class="st">&quot;sex&quot;</span>, <span class="st">&quot;age&quot;</span>, <span class="dt">pop =</span> pops, <span class="dt">df =</span> psw, <span class="dt">time =</span> <span class="st">&quot;week&quot;</span>)</span>
+<span id="cb8-17"><a href="#cb8-17"></a>    rac &lt;-<span class="st"> </span><span class="kw">mci_2var</span>(<span class="st">&quot;age&quot;</span>, <span class="st">&quot;code&quot;</span>, <span class="dt">pop =</span> pops, <span class="dt">df =</span> psw, <span class="dt">time =</span> <span class="st">&quot;week&quot;</span>)</span>
+<span id="cb8-18"><a href="#cb8-18"></a>  }</span></code></pre></div>
+</div>
+<div id="results-by-period" class="section level3">
+<h3>Results by period</h3>
+<div class="sourceCode" id="cb9"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb9-1"><a href="#cb9-1"></a>knitr<span class="op">::</span><span class="kw">kable</span>(res)</span></code></pre></div>
+<table>
+<thead>
+<tr class="header">
+<th></th>
+<th align="right">m</th>
+<th align="right">2.5%</th>
+<th align="right">97.5%</th>
+<th align="right">m</th>
+<th align="right">2.5%</th>
+<th align="right">97.5%</th>
+<th align="right">m</th>
+<th align="right">2.5%</th>
+<th align="right">97.5%</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>Overall</td>
+<td align="right">0.55</td>
+<td align="right">0.25</td>
+<td align="right">0.78</td>
+<td align="right">8.36</td>
+<td align="right">6.62</td>
+<td align="right">11.86</td>
+<td align="right">9.46</td>
+<td align="right">7.29</td>
+<td align="right">11.81</td>
+</tr>
+<tr class="even">
+<td>Male</td>
+<td align="right">0.47</td>
+<td align="right">0.22</td>
+<td align="right">0.69</td>
+<td align="right">7.31</td>
+<td align="right">5.83</td>
+<td align="right">9.96</td>
+<td align="right">8.31</td>
+<td align="right">6.14</td>
+<td align="right">11.01</td>
+</tr>
+<tr class="odd">
+<td>Female</td>
+<td align="right">0.61</td>
+<td align="right">0.28</td>
+<td align="right">0.88</td>
+<td align="right">9.33</td>
+<td align="right">7.28</td>
+<td align="right">13.61</td>
+<td align="right">10.54</td>
+<td align="right">8.33</td>
+<td align="right">12.70</td>
+</tr>
+<tr class="even">
+<td>0-9</td>
+<td align="right">0.45</td>
+<td align="right">0.13</td>
+<td align="right">0.70</td>
+<td align="right">7.08</td>
+<td align="right">3.07</td>
+<td align="right">10.37</td>
+<td align="right">8.19</td>
+<td align="right">2.37</td>
+<td align="right">12.63</td>
+</tr>
+<tr class="odd">
+<td>10-19</td>
+<td align="right">0.56</td>
+<td align="right">0.26</td>
+<td align="right">0.92</td>
+<td align="right">8.52</td>
+<td align="right">6.89</td>
+<td align="right">10.30</td>
+<td align="right">9.82</td>
+<td align="right">6.01</td>
+<td align="right">14.25</td>
+</tr>
+<tr class="even">
+<td>20-29</td>
+<td align="right">0.56</td>
+<td align="right">0.21</td>
+<td align="right">0.94</td>
+<td align="right">8.63</td>
+<td align="right">5.64</td>
+<td align="right">16.73</td>
+<td align="right">9.53</td>
+<td align="right">8.15</td>
+<td align="right">11.53</td>
+</tr>
+<tr class="odd">
+<td>30-39</td>
+<td align="right">0.64</td>
+<td align="right">0.25</td>
+<td align="right">1.17</td>
+<td align="right">9.90</td>
+<td align="right">6.42</td>
+<td align="right">19.58</td>
+<td align="right">11.11</td>
+<td align="right">7.67</td>
+<td align="right">18.74</td>
+</tr>
+<tr class="even">
+<td>40-49</td>
+<td align="right">0.56</td>
+<td align="right">0.25</td>
+<td align="right">1.01</td>
+<td align="right">8.47</td>
+<td align="right">7.04</td>
+<td align="right">10.69</td>
+<td align="right">9.76</td>
+<td align="right">6.05</td>
+<td align="right">13.30</td>
+</tr>
+<tr class="odd">
+<td>50-59</td>
+<td align="right">0.58</td>
+<td align="right">0.23</td>
+<td align="right">0.95</td>
+<td align="right">8.86</td>
+<td align="right">6.31</td>
+<td align="right">16.02</td>
+<td align="right">9.80</td>
+<td align="right">8.19</td>
+<td align="right">11.60</td>
+</tr>
+<tr class="even">
+<td>60-69</td>
+<td align="right">0.48</td>
+<td align="right">0.18</td>
+<td align="right">0.75</td>
+<td align="right">7.39</td>
+<td align="right">4.30</td>
+<td align="right">10.62</td>
+<td align="right">8.44</td>
+<td align="right">4.07</td>
+<td align="right">11.08</td>
+</tr>
+<tr class="odd">
+<td>70-79</td>
+<td align="right">0.46</td>
+<td align="right">0.19</td>
+<td align="right">0.72</td>
+<td align="right">7.03</td>
+<td align="right">5.73</td>
+<td align="right">8.60</td>
+<td align="right">8.17</td>
+<td align="right">4.54</td>
+<td align="right">11.21</td>
+</tr>
+<tr class="even">
+<td>80+</td>
+<td align="right">0.60</td>
+<td align="right">0.24</td>
+<td align="right">1.13</td>
+<td align="right">9.15</td>
+<td align="right">6.35</td>
+<td align="right">15.90</td>
+<td align="right">10.14</td>
+<td align="right">8.23</td>
+<td align="right">11.95</td>
+</tr>
+<tr class="odd">
+<td>GUA</td>
+<td align="right">0.66</td>
+<td align="right">0.28</td>
+<td align="right">1.12</td>
+<td align="right">9.83</td>
+<td align="right">6.88</td>
+<td align="right">12.94</td>
+<td align="right">11.18</td>
+<td align="right">7.74</td>
+<td align="right">15.32</td>
+</tr>
+<tr class="even">
+<td>MAR</td>
+<td align="right">0.52</td>
+<td align="right">0.18</td>
+<td align="right">0.84</td>
+<td align="right">8.08</td>
+<td align="right">5.74</td>
+<td align="right">11.58</td>
+<td align="right">9.14</td>
+<td align="right">5.78</td>
+<td align="right">12.18</td>
+</tr>
+<tr class="odd">
+<td>GUY</td>
+<td align="right">0.67</td>
+<td align="right">0.26</td>
+<td align="right">1.06</td>
+<td align="right">10.14</td>
+<td align="right">6.84</td>
+<td align="right">14.10</td>
+<td align="right">11.43</td>
+<td align="right">8.31</td>
+<td align="right">15.52</td>
+</tr>
+<tr class="even">
+<td>RUN</td>
+<td align="right">0.62</td>
+<td align="right">0.26</td>
+<td align="right">1.02</td>
+<td align="right">9.39</td>
+<td align="right">5.89</td>
+<td align="right">13.78</td>
+<td align="right">10.59</td>
+<td align="right">6.75</td>
+<td align="right">15.50</td>
+</tr>
+<tr class="odd">
+<td>IDF</td>
+<td align="right">0.50</td>
+<td align="right">0.18</td>
+<td align="right">0.83</td>
+<td align="right">7.73</td>
+<td align="right">5.41</td>
+<td align="right">11.77</td>
+<td align="right">8.72</td>
+<td align="right">6.44</td>
+<td align="right">11.30</td>
+</tr>
+<tr class="even">
+<td>CVL</td>
+<td align="right">0.58</td>
+<td align="right">0.20</td>
+<td align="right">0.95</td>
+<td align="right">8.86</td>
+<td align="right">5.64</td>
+<td align="right">13.39</td>
+<td align="right">10.03</td>
+<td align="right">7.11</td>
+<td align="right">13.83</td>
+</tr>
+<tr class="odd">
+<td>BFC</td>
+<td align="right">0.67</td>
+<td align="right">0.27</td>
+<td align="right">1.10</td>
+<td align="right">10.00</td>
+<td align="right">6.74</td>
+<td align="right">13.93</td>
+<td align="right">11.29</td>
+<td align="right">7.24</td>
+<td align="right">16.77</td>
+</tr>
+<tr class="even">
+<td>NOR</td>
+<td align="right">0.60</td>
+<td align="right">0.25</td>
+<td align="right">1.01</td>
+<td align="right">9.03</td>
+<td align="right">5.81</td>
+<td align="right">12.86</td>
+<td align="right">10.30</td>
+<td align="right">6.25</td>
+<td align="right">14.29</td>
+</tr>
+<tr class="odd">
+<td>HDF</td>
+<td align="right">0.45</td>
+<td align="right">0.20</td>
+<td align="right">0.72</td>
+<td align="right">7.01</td>
+<td align="right">4.68</td>
+<td align="right">9.90</td>
+<td align="right">8.00</td>
+<td align="right">4.77</td>
+<td align="right">10.84</td>
+</tr>
+<tr class="even">
+<td>GES</td>
+<td align="right">0.54</td>
+<td align="right">0.25</td>
+<td align="right">0.85</td>
+<td align="right">8.36</td>
+<td align="right">5.86</td>
+<td align="right">13.36</td>
+<td align="right">9.44</td>
+<td align="right">7.42</td>
+<td align="right">12.07</td>
+</tr>
+<tr class="odd">
+<td>PDL</td>
+<td align="right">0.67</td>
+<td align="right">0.30</td>
+<td align="right">1.07</td>
+<td align="right">10.08</td>
+<td align="right">6.96</td>
+<td align="right">13.63</td>
+<td align="right">11.44</td>
+<td align="right">7.75</td>
+<td align="right">15.47</td>
+</tr>
+<tr class="even">
+<td>BRE</td>
+<td align="right">0.61</td>
+<td align="right">0.27</td>
+<td align="right">0.98</td>
+<td align="right">9.29</td>
+<td align="right">6.30</td>
+<td align="right">13.78</td>
+<td align="right">10.51</td>
+<td align="right">8.06</td>
+<td align="right">14.40</td>
+</tr>
+<tr class="odd">
+<td>NAQ</td>
+<td align="right">0.43</td>
+<td align="right">0.15</td>
+<td align="right">0.68</td>
+<td align="right">6.74</td>
+<td align="right">4.69</td>
+<td align="right">9.84</td>
+<td align="right">7.66</td>
+<td align="right">5.19</td>
+<td align="right">10.11</td>
+</tr>
+<tr class="even">
+<td>OCC</td>
+<td align="right">0.51</td>
+<td align="right">0.24</td>
+<td align="right">0.85</td>
+<td align="right">7.95</td>
+<td align="right">5.40</td>
+<td align="right">11.16</td>
+<td align="right">9.03</td>
+<td align="right">6.60</td>
+<td align="right">11.31</td>
+</tr>
+<tr class="odd">
+<td>ARA</td>
+<td align="right">0.56</td>
+<td align="right">0.25</td>
+<td align="right">0.91</td>
+<td align="right">8.64</td>
+<td align="right">5.11</td>
+<td align="right">14.44</td>
+<td align="right">9.78</td>
+<td align="right">6.59</td>
+<td align="right">14.50</td>
+</tr>
+<tr class="even">
+<td>PAC</td>
+<td align="right">0.58</td>
+<td align="right">0.22</td>
+<td align="right">0.98</td>
+<td align="right">8.93</td>
+<td align="right">5.78</td>
+<td align="right">13.72</td>
+<td align="right">10.10</td>
+<td align="right">6.48</td>
+<td align="right">14.33</td>
+</tr>
+<tr class="odd">
+<td>COR</td>
+<td align="right">1.22</td>
+<td align="right">0.49</td>
+<td align="right">2.34</td>
+<td align="right">16.85</td>
+<td align="right">11.63</td>
+<td align="right">22.57</td>
+<td align="right">18.83</td>
+<td align="right">13.79</td>
+<td align="right">25.11</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+
+
+
+<!-- code folding -->
+
+
+<!-- dynamically load mathjax for compatibility with self-contained -->
+<script>
+  (function () {
+    var script = document.createElement("script");
+    script.type = "text/javascript";
+    script.src  = "https://mathjax.rstudio.com/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML";
+    document.getElementsByTagName("head")[0].appendChild(script);
+  })();
+</script>
+
+</body>
+</html>

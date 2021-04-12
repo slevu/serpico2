@@ -19,6 +19,8 @@ data {
   int<lower=0> nneg;
   int<lower=0, upper=npos> TP;
   int<lower=0, upper=nneg> TN;
+  real<lower = 0> scale_beta_prior;
+  real<lower = 0> scale_sigma_prior;
 }
 
 parameters {
@@ -49,13 +51,13 @@ model {
 
   // priors
 
-  beta ~ normal(0, 2); // student_t(1, 0, 2.5); //
+  beta ~  normal(0, scale_beta_prior); // student_t(1, 0, 2.5); //
   alpha_a ~ normal(0, sigma_a); // hierarchical normal prior
   alpha_r ~ normal(0, sigma_r);
   alpha_t ~ normal(0, sigma_t);
 
-  sigma_a ~ lognormal(0, 1); // weakly informative hyper prior
-  sigma_r ~ lognormal(0, 1);
-  sigma_t ~ lognormal(0, 1);
+  sigma_a ~ lognormal(0, scale_sigma_prior); // weakly informative hyper prior
+  sigma_r ~ lognormal(0, scale_sigma_prior);
+  sigma_t ~ lognormal(0, scale_sigma_prior);
 }
 
