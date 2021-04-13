@@ -92,14 +92,17 @@ set_stan <- function(
   n_chains = 2, # 4 #
   n_core = 2, # 2 #
   scale_beta_prior = 2,
-  scale_sigma_prior = 1
+  scale_sigma_prior = 1,
+  scale_inter_prior = 1,
+  type = 1 # parameterization (1: alpha + beta*sex ..., 2: X*beta ...)
 ){
   ## name output
   iters <- (n_iter - n_warmup) * n_chains
   # dir.create("ouput/", showWarnings = FALSE)
   NMOUT <- paste0("output/", "fit", modelnb, "_", iters, ".rds")
 
-  data_stan <- list(
+  if (type == 1) {
+    data_stan <- list(
     D = 2, # nb predictors : sex + intercept
     N = nrow(df),
     A = length(unique(df$age)),
@@ -117,8 +120,28 @@ set_stan <- function(
     TN = calib["TN"],
     scale_beta_prior = scale_beta_prior,
     scale_sigma_prior = scale_sigma_prior
-  )
-parms_stan <- list(n_iter = n_iter, n_warmup = n_warmup,
+    ) } else {
+      data_stan <- list(
+        D = 1, # nb fixed predictors : sex
+        N = nrow(df),
+        A = length(unique(df$age)),
+        R = length(unique(df$reg)),
+        T = length(unique(df$time)),
+        y = as.integer(df$res),
+        age = as.integer(df$age),
+        reg = as.integer(df$reg),
+        time = as.integer(df$time),
+        sex = as.integer(df$sex) - 1,
+        nneg = calib["npp"],
+        npos = calib["ncc"],
+        TP = calib["TP"],
+        TN = calib["TN"],
+        scale_beta_prior = scale_beta_prior,
+        scale_sigma_prior = scale_sigma_prior,
+        scale_inter_prior = scale_inter_prior
+      ) 
+    }
+  parms_stan <- list(n_iter = n_iter, n_warmup = n_warmup,
                    n_chains = n_chains,
                    n_core = n_core)
 return( list(nmout = NMOUT, data = data_stan, parms = parms_stan) )

@@ -14,16 +14,18 @@ if ( exists("run", globalenv()) ){
 ##---- fit ----
   l_stan <- set_stan(df = d0,
                      modelnb = 1,
-                     n_iter =  125, # increase this
-                     n_warmup = 100, # and this
-                     n_chains = 1, # and this
-                     n_core = 1, # possibly this too
-                     scale_beta_prior = 1.5,
-                     scale_sigma_prior = .5) 
+                     n_iter =  200, # increase this
+                     n_warmup = 150, # and this
+                     n_chains = 2, # and this
+                     n_core = 2, # possibly this too
+                     scale_beta_prior = .5,
+                     scale_sigma_prior = .5,
+                     scale_inter_prior = 1,
+                     type = 2) 
   NMOUT <- l_stan$nmout
   
   if ( !file.exists( NMOUT ) ){
-    model <- rstan::stan_model("inst/stan/model.stan", auto_write = TRUE)
+    model <- rstan::stan_model("inst/stan/model1.stan", auto_write = TRUE) # "inst/stan/model.stan"
     system.time(
       stanfit <- rstan::sampling(model,
                                  data = l_stan$data,
@@ -31,7 +33,7 @@ if ( exists("run", globalenv()) ){
                                  warmup = l_stan$parms[["n_warmup"]],
                                  chains = l_stan$parms[["n_chains"]],
                                  cores = l_stan$parms[["n_core"]],
-                                 control = list(adapt_delta = 0.99))
+                                 control = list(adapt_delta = 0.95))
     )
     dir.create("output/", showWarnings = FALSE)
     saveRDS(stanfit, NMOUT)
@@ -40,7 +42,9 @@ if ( exists("run", globalenv()) ){
   } # 
   
 ##---- plot ----
-  # rstan::traceplot(stanfit, pars = "beta", inc_warmup = TRUE)
+  # rstan::traceplot(stanfit, pars = c("alpha","beta_s", "beta_a","alpha_t"), inc_warmup = TRUE)
+  # rstan::traceplot(stanfit, pars = "beta_s", inc_warmup = TRUE)
+  # rstan::traceplot(stanfit, pars = "beta_a", inc_warmup = TRUE)
   # rstan::traceplot(stanfit, pars = "alpha_a", inc_warmup = TRUE)
   # rstan::traceplot(stanfit, pars = "alpha_r", inc_warmup = TRUE)
   # rstan::traceplot(stanfit, pars = "alpha_t", inc_warmup = TRUE)
