@@ -3,10 +3,10 @@ Type: Package
 Title: Seroprevalence of SARS-CoV-2
 Version: 0.0.1.0
 Authors@R: person("Stephane", "Le Vu", email = "stephane.le-vu@santepubliquefrance.fr", role = c("aut", "cre"))
-Description: Provides functions to reproduce the analysis from the manuscript 
+Description: Provides functions to reproduce the analysis from the article 
   "Prevalence of SARS-CoV-2 antibodies in France: results from nationwide 
   serological surveillance"
-  <https://www.medrxiv.org/content/10.1101/2020.10.20.20213116v1>.
+  <https://doi.org/10.1038/s41467-021-23233-6>.
 Depends:
     R (>= 3.5.0)
 License: GPL-3 + file LICENSE
