@@ -1,5 +1,5 @@
 # serpico2: seroprevalence of SARS-CoV-2
-This repository contains R and Stan reproducible code for manuscript https://medrxiv.org/cgi/content/short/2020.10.20.20213116v1
+This repository contains R and Stan reproducible code for the article **Prevalence of SARS-CoV-2 antibodies in France: results from nationwide serological surveillance**, available here: https://doi.org/10.1038/s41467-021-23233-6 
 
 ## Usage
 A vignette built in the package demonstrates the functions to estimate seroprevalence from a simulated dataset. It can be seen [here](http://htmlpreview.github.io/?https://github.com/slevu/serpico2/blob/main/vignettes/vignette.html) without installing the package.
