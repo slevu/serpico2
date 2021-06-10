@@ -2,10 +2,10 @@
 % Please edit documentation in R/functions.R
 \name{calib_unit_test}
 \alias{calib_unit_test}
-\title{Results from calibration study fro one serological test}
+\title{Results from calibration study for one serological test}
 \usage{
 calib_unit_test()
 }
 \description{
-Results from calibration study fro one serological test
+Results from calibration study for one serological test
 }

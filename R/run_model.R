@@ -21,7 +21,8 @@ if ( exists("run", globalenv()) ){
   NMOUT <- l_stan$nmout
   
   if ( !file.exists( NMOUT ) ){
-    model <- rstan::stan_model("inst/stan/model.stan", auto_write = TRUE)
+    rstan::rstan_options("javascript" = FALSE)
+    model <- rstan::stan_model(system.file("stan", "model.stan", package = "serpico2"), auto_write = TRUE)
     system.time(
       stanfit <- rstan::sampling(model,
                                  data = l_stan$data,
